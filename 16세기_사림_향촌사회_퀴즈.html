@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>16세기 사림과 향촌사회 4지선다 퀴즈</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; background: #f5f4f0; color: #1a1a18; min-height: 100vh; padding: 2rem 1rem; }
+  .container { max-width: 720px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 2rem; }
+  header h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.4rem; }
+  header p { font-size: 0.875rem; color: #5f5e5a; }
+  .progress-bar-wrap { background: #d3d1c7; border-radius: 99px; height: 6px; margin-bottom: 0.5rem; }
+  .progress-bar { height: 6px; border-radius: 99px; background: #1D9E75; transition: width 0.4s; }
+  .progress-label { font-size: 0.8rem; color: #5f5e5a; text-align: right; margin-bottom: 1.5rem; }
+  .quiz-card { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 14px; padding: 1.75rem; margin-bottom: 1.25rem; }
+  .q-num { font-size: 0.75rem; font-weight: 600; color: #0F6E56; background: #E1F5EE; padding: 3px 10px; border-radius: 99px; display: inline-block; margin-bottom: 0.75rem; }
+  .q-text { font-size: 1rem; line-height: 1.7; font-weight: 500; margin-bottom: 1.25rem; }
+  .options { display: flex; flex-direction: column; gap: 0.6rem; }
+  .opt-btn { background: #fff; border: 0.5px solid #b4b2a9; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.9rem; line-height: 1.5; text-align: left; cursor: pointer; transition: all 0.15s; color: #1a1a18; }
+  .opt-btn:hover:not(:disabled) { background: #f1efe8; border-color: #888780; }
+  .opt-btn.correct { background: #E1F5EE; border-color: #1D9E75; color: #085041; }
+  .opt-btn.wrong { background: #FAECE7; border-color: #993C1D; color: #4A1B0C; }
+  .opt-btn.reveal { background: #E1F5EE; border-color: #1D9E75; color: #085041; }
+  .opt-btn:disabled { cursor: default; }
+  .explanation { margin-top: 1rem; padding: 0.875rem 1rem; background: #f1efe8; border-radius: 10px; font-size: 0.875rem; line-height: 1.7; color: #2c2c2a; display: none; }
+  .explanation.show { display: block; }
+  .explanation strong { color: #0F6E56; }
+  .result-panel { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 14px; padding: 2rem; text-align: center; display: none; }
+  .result-panel.show { display: block; }
+  .score-circle { width: 100px; height: 100px; border-radius: 50%; background: #E1F5EE; border: 3px solid #1D9E75; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+  .score-circle .num { font-size: 2rem; font-weight: 700; color: #0F6E56; line-height: 1; }
+  .score-circle .denom { font-size: 0.8rem; color: #1D9E75; }
+  .result-panel h2 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+  .result-panel p { font-size: 0.9rem; color: #5f5e5a; margin-bottom: 1.5rem; }
+  .btn-row { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 0.6rem 1.4rem; border-radius: 8px; font-size: 0.875rem; cursor: pointer; border: 0.5px solid #b4b2a9; background: #fff; color: #1a1a18; transition: background 0.15s; }
+  .btn:hover { background: #f1efe8; }
+  .btn.primary { background: #0F6E56; color: #fff; border-color: #0F6E56; }
+  .btn.primary:hover { background: #085041; }
+  .wrong-only-banner { background: #FAECE7; border: 0.5px solid #F0997B; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.875rem; color: #4A1B0C; margin-bottom: 1.25rem; display: none; }
+  .wrong-only-banner.show { display: block; }
+  .keyword-chip { display: inline-block; background: #E6F1FB; color: #0C447C; font-size: 0.75rem; padding: 2px 8px; border-radius: 99px; margin: 2px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>16세기 사림과 향촌사회 핵심 퀴즈</h1>
+    <p>사화 · 서원 · 향약 · 붕당정치 — 4지선다 17문항</p>
+  </header>
+
+  <div class="progress-bar-wrap"><div class="progress-bar" id="pbar" style="width:0%"></div></div>
+  <div class="progress-label" id="plabel">0 / 17 완료</div>
+
+  <div class="wrong-only-banner" id="wrongBanner">오답 재도전 모드 — 틀린 문제만 표시됩니다.</div>
+
+  <div id="quizArea"></div>
+  <div class="result-panel" id="resultPanel">
+    <div class="score-circle"><span class="num" id="scoreNum">0</span><span class="denom" id="scoreDenom">/ 17</span></div>
+    <h2 id="resultTitle"></h2>
+    <p id="resultMsg"></p>
+    <div class="btn-row">
+      <button class="btn primary" onclick="retryWrong()">오답만 다시 풀기</button>
+      <button class="btn" onclick="restartAll()">전체 다시 풀기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ALL_QUESTIONS = [
+  {
+    q: "16세기 사림의 출신적 배경으로 가장 적절한 것은?",
+    opts: ["조선 건국에 공을 세운 중앙 관료","영남 등 지방의 중소지주 출신 학자","왕실과 혼인관계를 맺은 외척","한양에 거주하는 대상인 집단"],
+    ans: 1,
+    exp: "사림은 <strong>지방의 중소지주 출신</strong>으로, 길재·김숙자·김종직 등으로 이어지는 학문적 계보를 형성하며 성리학적 의리와 도학을 중시하였습니다. 이는 공신과 중앙 권력에 기반한 훈구파와 뚜렷이 구별되는 지점입니다.",
+    keywords: ["사림","중소지주","영남","성리학"]
+  },
+  {
+    q: "사림이 중앙 정계에 본격적으로 진출하게 된 계기를 만든 왕은?",
+    opts: ["태종","세조","성종","연산군"],
+    ans: 2,
+    exp: "<strong>성종</strong>은 훈구파를 견제하기 위해 김종직 등 사림을 등용하여 중앙 정계에 본격적으로 진출시켰습니다. 이후 연산군 때 무오사화로 사림이 큰 화를 입었습니다.",
+    keywords: ["성종","김종직","사림 등용"]
+  },
+  {
+    q: "성종이 김종직 등 사림을 등용한 시기로 옳은 것은?",
+    opts: ["15세기 후반","16세기 초반","16세기 후반","17세기 초반"],
+    ans: 0,
+    exp: "성종의 재위 기간은 1469~1494년으로 <strong>15세기 후반</strong>에 해당합니다. 사림의 정치적 부침(사화)이 16세기 내내 이어지다 보니 등용 시점도 16세기로 착각하기 쉬우니 주의해야 합니다.",
+    keywords: ["성종","15세기 후반","연도"]
+  },
+  {
+    q: "조선시대 3사(三司)를 구성하는 기관으로 옳은 것은?",
+    opts: ["성균관·사헌부·사간원","사헌부·사간원·홍문관","의정부·사헌부·홍문관","성균관·홍문관·사간원"],
+    ans: 1,
+    exp: "조선의 3사는 <strong>사헌부·사간원·홍문관</strong>으로 구성된 언론 기관입니다. 성균관은 조선 최고의 교육기관으로 3사에 속하지 않으므로 혼동하지 않도록 주의해야 합니다.",
+    keywords: ["3사","사헌부","사간원","홍문관"]
+  },
+  {
+    q: "김종직의 「조의제문」이 발단이 되어 사림이 화를 입은 사화는?",
+    opts: ["기묘사화","무오사화","갑자사화","을사사화"],
+    ans: 1,
+    exp: "연산군 때인 1498년, 김종직이 쓴 「조의제문」이 문제가 되어 <strong>무오사화</strong>가 일어났습니다. 이는 사림이 중앙 정계에서 처음으로 겪은 대규모 정치적 타격입니다.",
+    keywords: ["무오사화","조의제문","김종직","연산군"]
+  },
+  {
+    q: "조광조가 위훈삭제와 현량과 실시를 추진하다 훈구파의 반발로 실각한 사화는?",
+    opts: ["무오사화","갑자사화","기묘사화","을사사화"],
+    ans: 2,
+    exp: "중종 때 조광조 등이 위훈삭제·현량과 등 급진 개혁을 추진하였으나 훈구 세력의 반발로 <strong>기묘사화</strong>(1519)가 일어나 조광조 등이 실각하였습니다.",
+    keywords: ["기묘사화","조광조","위훈삭제","현량과"]
+  },
+  {
+    q: "명종 때 외척 간의 권력 다툼 속에서 일어난 사화는?",
+    opts: ["무오사화","갑자사화","기묘사화","을사사화"],
+    ans: 3,
+    exp: "명종 때 외척 세력 간의 권력 다툼 속에서 <strong>을사사화</strong>(1545)가 일어났습니다. 이로써 무오·갑자·기묘·을사의 4대 사화가 완성됩니다.",
+    keywords: ["을사사화","명종","외척"]
+  },
+  {
+    q: "사림이 4대 사화를 거치면서도 결국 정치적으로 재기할 수 있었던 근본적 바탕은?",
+    opts: ["왕실의 지속적인 비호","중앙군에 대한 직접적 장악","향촌의 서원·향약을 통한 독자적 기반","대규모 토지 소유를 통한 경제력"],
+    ans: 2,
+    exp: "사림은 중앙 권력의 부침과 무관하게 <strong>서원과 향약을 매개로 한 향촌 사회의 독자적 기반</strong>을 구축해두었기 때문에, 사화로 인한 정치적 타격을 완충하고 재기할 수 있었습니다.",
+    keywords: ["향촌 기반","서원","향약","재기"]
+  },
+  {
+    q: "최초의 사액서원인 백운동서원(소수서원)을 건립한 인물은?",
+    opts: ["이황","주세붕","조광조","김종직"],
+    ans: 1,
+    exp: "<strong>주세붕</strong>이 세운 백운동서원은 이후 이황의 건의로 사액을 받아 소수서원이 되었습니다. 건립자(주세붕)와 사액 건의자(이황)를 혼동하지 않도록 주의해야 합니다.",
+    keywords: ["백운동서원","주세붕","건립"]
+  },
+  {
+    q: "백운동서원이 '소수서원'이라는 사액을 받도록 건의한 인물은?",
+    opts: ["주세붕","이황","이이","조광조"],
+    ans: 1,
+    exp: "<strong>이황</strong>의 건의로 백운동서원이 사액을 받아 소수서원이 되었습니다. 이는 조선 최초의 사액서원으로, 이후 서원이 사림의 핵심 지지 기반으로 자리잡는 계기가 되었습니다.",
+    keywords: ["소수서원","이황","사액"]
+  },
+  {
+    q: "서원의 주된 기능으로 가장 적절한 것은?",
+    opts: ["조세 징수와 환곡 운영","선현 제사와 유생 교육","지방군 훈련과 무기 보관","호적과 양안 작성"],
+    ans: 1,
+    exp: "서원은 <strong>선현에 대한 제사와 유생에 대한 성리학 교육</strong>을 담당하는 기관으로, 동시에 향촌 사림의 결집과 자치의 거점 역할을 하였습니다.",
+    keywords: ["서원","선현제사","유생교육"]
+  },
+  {
+    q: "조선의 향약은 중국의 어떤 제도를 본떠 시행되었는가?",
+    opts: ["균전제","여씨향약","조용조","일조편법"],
+    ans: 1,
+    exp: "조선의 향약은 중국 송대에 만들어진 <strong>여씨향약</strong>을 본뜬 것으로, 조광조 등이 초기 보급을 시도한 이후 이황·이이를 거쳐 향촌 사회에 정착하였습니다.",
+    keywords: ["여씨향약","향약","중국"]
+  },
+  {
+    q: "향약의 4대 강목 중 '어려운 일은 서로 돕는다'는 뜻을 가진 정확한 표기는?",
+    opts: ["환난상구","환란상구","환난상휼","환란상휼"],
+    ans: 0,
+    exp: "정확한 한자는 患難相救로, <strong>환난상구</strong>가 맞는 표기입니다. 환란상구·환난상휼·환란상휼은 모두 한 글자씩 틀린 표기이니 정확히 구분해서 외워야 합니다.",
+    keywords: ["환난상구","4대강목","표기"]
+  },
+  {
+    q: "향약 4대 강목 중 '잘못은 서로 규제한다'는 뜻을 가진 것은?",
+    opts: ["덕업상권","과실상규","예속상교","환난상구"],
+    ans: 1,
+    exp: "<strong>과실상규(過失相規)</strong>는 잘못된 행동을 서로 규제한다는 뜻입니다. 덕업상권(좋은 일은 서로 권장), 예속상교(예의로 서로 사귐), 환난상구(어려운 일은 서로 도움)와 함께 향약의 4대 강목을 이룹니다.",
+    keywords: ["과실상규","4대강목","향약"]
+  },
+  {
+    q: "유향소와 경재소의 관계를 옳게 설명한 것은?",
+    opts: ["유향소가 경재소를 감독한다","경재소는 중앙에 있는 유향소 출신 관리들이 유향소를 통제하는 기구다","유향소와 경재소는 동일 기구의 다른 명칭이다","경재소는 지방세 징수만을 전담하는 기구다"],
+    ans: 1,
+    exp: "<strong>경재소</strong>는 중앙에 있는 해당 지방 출신 고위 관리들이 자기 출신 지역의 <strong>유향소</strong>를 통제·연계하는 기구입니다. 사림은 이 두 기구를 통해 지방 행정에 참여하며 향촌 내 영향력을 강화하였습니다.",
+    keywords: ["유향소","경재소","지방행정"]
+  },
+  {
+    q: "사림이 향촌 내 영향력을 강화하기 위해 족보 편찬과 함께 발달시킨 학문은?",
+    opts: ["율령학","예학","역법학","병법학"],
+    ans: 1,
+    exp: "사림은 족보 편찬, 동족 마을 형성과 함께 <strong>예학</strong>을 발달시켜 가묘·사당 건립 등을 통해 향촌 내 유교적 질서와 가문의 위상을 공고히 하였습니다.",
+    keywords: ["예학","족보","가묘"]
+  },
+  {
+    q: "선조 즉위 후 정국을 주도하게 된 사림이 동인과 서인으로 갈라지게 된 직접적 계기는?",
+    opts: ["왕위 계승 문제","이조전랑 임명을 둘러싼 갈등","대외 외교 노선의 차이","토지 제도 개혁안의 차이"],
+    ans: 1,
+    exp: "사림이 선조 때 정국을 주도하게 된 이후, <strong>이조전랑(인사권을 가진 요직) 임명을 둘러싼 갈등</strong>을 계기로 동인과 서인으로 갈라지면서 붕당정치가 본격화되었습니다.",
+    keywords: ["이조전랑","동인","서인","붕당정치"]
+  }
+];
+
+let currentQuestions = [];
+let wrongIds = [];
+let answered = [];
+let score = 0;
+let isWrongOnlyMode = false;
+
+function init(questions, wrongOnly = false) {
+  currentQuestions = questions;
+  wrongIds = [];
+  answered = new Array(questions.length).fill(false);
+  score = 0;
+  isWrongOnlyMode = wrongOnly;
+  document.getElementById('wrongBanner').className = wrongOnly ? 'wrong-only-banner show' : 'wrong-only-banner';
+  document.getElementById('resultPanel').className = 'result-panel';
+  renderAll();
+  updateProgress();
+}
+
+function renderAll() {
+  const area = document.getElementById('quizArea');
+  area.innerHTML = currentQuestions.map((q, i) => renderCard(q, i)).join('');
+}
+
+function renderCard(q, i) {
+  const optsHtml = q.opts.map((o, oi) =>
+    `<button class="opt-btn" id="opt_${i}_${oi}" onclick="choose(${i},${oi})">${String.fromCharCode(9312+oi)} ${o}</button>`
+  ).join('');
+  const kwHtml = q.keywords.map(k => `<span class="keyword-chip">${k}</span>`).join('');
+  return `
+  <div class="quiz-card" id="card_${i}">
+    <span class="q-num">Q${i+1}</span>
+    <p class="q-text">${q.q}</p>
+    <div class="options">${optsHtml}</div>
+    <div class="explanation" id="exp_${i}">
+      <p>${q.exp}</p>
+      <div style="margin-top:0.5rem;">${kwHtml}</div>
+    </div>
+  </div>`;
+}
+
+function choose(qIdx, optIdx) {
+  if (answered[qIdx]) return;
+  answered[qIdx] = true;
+  const q = currentQuestions[qIdx];
+  const isCorrect = optIdx === q.ans;
+  if (isCorrect) { score++; }
+  else { wrongIds.push(qIdx); }
+
+  for (let i = 0; i < q.opts.length; i++) {
+    const btn = document.getElementById(`opt_${qIdx}_${i}`);
+    btn.disabled = true;
+    if (i === q.ans) btn.classList.add(isCorrect && i === optIdx ? 'correct' : 'reveal');
+    if (!isCorrect && i === optIdx) btn.classList.add('wrong');
+  }
+  document.getElementById(`exp_${qIdx}`).classList.add('show');
+  updateProgress();
+
+  if (answered.every(Boolean)) {
+    setTimeout(showResult, 600);
+  }
+}
+
+function updateProgress() {
+  const done = answered.filter(Boolean).length;
+  const total = currentQuestions.length;
+  document.getElementById('pbar').style.width = (done/total*100)+'%';
+  document.getElementById('plabel').textContent = `${done} / ${total} 완료`;
+}
+
+function showResult() {
+  const total = currentQuestions.length;
+  const pct = Math.round(score/total*100);
+  document.getElementById('scoreNum').textContent = score;
+  document.getElementById('scoreDenom').textContent = `/ ${total}`;
+  const titles = ['다시 도전해 보세요', '기초를 다져봅시다', '조금 더 공부가 필요해요', '잘 이해하고 있어요', '거의 완벽해요', '만점! 완벽합니다'];
+  const msgs = [
+    '모범답안의 키워드를 다시 정리해 보세요.',
+    '필수 키워드 표를 먼저 암기해 보세요.',
+    '틀린 문제의 해설을 꼼꼼히 읽어보세요.',
+    '오답 문제를 한 번 더 풀어보면 완성됩니다.',
+    '핵심 키워드를 시험장에서도 떠올릴 수 있을 거예요.',
+    '이 주제는 완벽하게 정복했습니다!'
+  ];
+  const idx = Math.min(Math.floor(pct/20), 5);
+  document.getElementById('resultTitle').textContent = titles[idx];
+  document.getElementById('resultMsg').textContent = msgs[idx];
+  document.getElementById('resultPanel').className = 'result-panel show';
+  document.getElementById('resultPanel').scrollIntoView({behavior:'smooth'});
+}
+
+function retryWrong() {
+  if (wrongIds.length === 0) { alert('모든 문제를 맞혔습니다!'); return; }
+  const wrongQs = wrongIds.map(i => currentQuestions[i]);
+  init(wrongQs, true);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function restartAll() {
+  init(ALL_QUESTIONS, false);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+init(ALL_QUESTIONS);
+</script>
+</body>
+</html>
