@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>원효·의상 불교 사상 퀴즈</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; background: #f5f4f0; color: #1a1a18; min-height: 100vh; padding: 2rem 1rem; }
+  .container { max-width: 720px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 2rem; }
+  header h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.4rem; }
+  header p { font-size: 0.875rem; color: #5f5e5a; }
+  .progress-bar-wrap { background: #d3d1c7; border-radius: 99px; height: 6px; margin-bottom: 0.5rem; }
+  .progress-bar { height: 6px; border-radius: 99px; background: #1D9E75; transition: width 0.4s; }
+  .progress-label { font-size: 0.8rem; color: #5f5e5a; text-align: right; margin-bottom: 1.5rem; }
+  .quiz-card { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 14px; padding: 1.75rem; margin-bottom: 1.25rem; }
+  .q-num { font-size: 0.75rem; font-weight: 600; color: #0F6E56; background: #E1F5EE; padding: 3px 10px; border-radius: 99px; display: inline-block; margin-bottom: 0.75rem; }
+  .q-text { font-size: 1rem; line-height: 1.7; font-weight: 500; margin-bottom: 1.25rem; }
+  .options { display: flex; flex-direction: column; gap: 0.6rem; }
+  .opt-btn { background: #fff; border: 0.5px solid #b4b2a9; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.9rem; line-height: 1.5; text-align: left; cursor: pointer; transition: all 0.15s; color: #1a1a18; }
+  .opt-btn:hover:not(:disabled) { background: #f1efe8; border-color: #888780; }
+  .opt-btn.correct { background: #E1F5EE; border-color: #1D9E75; color: #085041; }
+  .opt-btn.wrong { background: #FAECE7; border-color: #993C1D; color: #4A1B0C; }
+  .opt-btn.reveal { background: #E1F5EE; border-color: #1D9E75; color: #085041; }
+  .opt-btn:disabled { cursor: default; }
+  .explanation { margin-top: 1rem; padding: 0.875rem 1rem; background: #f1efe8; border-radius: 10px; font-size: 0.875rem; line-height: 1.7; color: #2c2c2a; display: none; }
+  .explanation.show { display: block; }
+  .explanation strong { color: #0F6E56; }
+  .result-panel { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 14px; padding: 2rem; text-align: center; display: none; }
+  .result-panel.show { display: block; }
+  .score-circle { width: 100px; height: 100px; border-radius: 50%; background: #E1F5EE; border: 3px solid #1D9E75; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+  .score-circle .num { font-size: 2rem; font-weight: 700; color: #0F6E56; line-height: 1; }
+  .score-circle .denom { font-size: 0.8rem; color: #1D9E75; }
+  .result-panel h2 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+  .result-panel p { font-size: 0.9rem; color: #5f5e5a; margin-bottom: 1.5rem; }
+  .btn-row { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 0.6rem 1.4rem; border-radius: 8px; font-size: 0.875rem; cursor: pointer; border: 0.5px solid #b4b2a9; background: #fff; color: #1a1a18; transition: background 0.15s; }
+  .btn:hover { background: #f1efe8; }
+  .btn.primary { background: #0F6E56; color: #fff; border-color: #0F6E56; }
+  .btn.primary:hover { background: #085041; }
+  .wrong-only-banner { background: #FAECE7; border: 0.5px solid #F0997B; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.875rem; color: #4A1B0C; margin-bottom: 1.25rem; display: none; }
+  .wrong-only-banner.show { display: block; }
+  .keyword-chip { display: inline-block; background: #E6F1FB; color: #0C447C; font-size: 0.75rem; padding: 2px 8px; border-radius: 99px; margin: 2px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>원효 · 의상 불교 사상 퀴즈</h1>
+    <p>통일신라 불교 — 4지선다 10문항</p>
+  </header>
+
+  <div class="progress-bar-wrap"><div class="progress-bar" id="pbar" style="width:0%"></div></div>
+  <div class="progress-label" id="plabel">0 / 10 완료</div>
+
+  <div class="wrong-only-banner" id="wrongBanner">오답 재도전 모드 — 틀린 문제만 표시됩니다.</div>
+
+  <div id="quizArea"></div>
+  <div class="result-panel" id="resultPanel">
+    <div class="score-circle"><span class="num" id="scoreNum">0</span><span class="denom" id="scoreDenom">/ 10</span></div>
+    <h2 id="resultTitle"></h2>
+    <p id="resultMsg"></p>
+    <div class="btn-row">
+      <button class="btn primary" onclick="retryWrong()">오답만 다시 풀기</button>
+      <button class="btn" onclick="restartAll()">전체 다시 풀기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ALL_QUESTIONS = [
+  {
+    q: "원효가 입당(入唐)을 시도하다 중도에 포기하고 귀국하여 독자적 사상을 전개한 계기는?",
+    opts: ["당나라의 국경 통제로 입국이 거절됨","밤에 해골에 고인 물을 마시고 '모든 것이 마음에 달려 있다'는 깨달음을 얻음","의상이 먼저 귀국하여 같이 돌아옴","당에서 만난 스승 지엄이 귀국을 권유함"],
+    ans: 1,
+    exp: "원효는 의상과 함께 당으로 향하던 중 무덤 옆 토굴에서 해골에 고인 물을 마신 뒤 <strong>'모든 것은 마음에서 비롯된다(一切唯心)'</strong>는 깨달음을 얻고 입당을 포기하였습니다. 이후 귀국하여 중국 불교에 의존하지 않는 독자적 사상 체계를 수립하였습니다.",
+    keywords: ["해골물","일체유심","입당포기","독자적사상"]
+  },
+  {
+    q: "원효가 모든 존재의 근원을 하나의 마음으로 파악하는 사상을 무엇이라 하는가?",
+    opts: ["화쟁사상","화엄사상","일심사상","유식사상"],
+    ans: 2,
+    exp: "<strong>일심사상(一心思想)</strong>은 원효 철학의 근본 토대입니다. 모든 존재의 근원을 '하나의 마음(一心)'으로 파악하며, 이를 바탕으로 서로 대립하는 종파의 교리도 궁극적으로는 같은 하나의 진리에서 나왔다고 보았습니다. 화쟁사상은 이 일심사상에서 파생됩니다.",
+    keywords: ["일심사상","一心","원효","불교통합"]
+  },
+  {
+    q: "원효가 다양한 종파의 사상적 대립을 조화시키고자 주장한 사상은?",
+    opts: ["교관겸수","화쟁사상","정혜쌍수","돈오점수"],
+    ans: 1,
+    exp: "<strong>화쟁사상(和諍思想)</strong>은 '다툼을 화해시킨다'는 뜻으로, 여러 불교 종파의 교리적 갈등을 일심사상을 바탕으로 조화·회통시키려 한 원효의 핵심 사상입니다. 『십문화쟁론』에서 10가지 쟁점을 정리하며 종파 간 대립 극복을 시도하였습니다.",
+    keywords: ["화쟁사상","和諍","종파조화","십문화쟁론"]
+  },
+  {
+    q: "원효가 저술한 작품으로 옳게 짝지어진 것은?",
+    opts: ["『화엄일승법계도』·『십문화쟁론』","『십문화쟁론』·『대승기신론소』","『대승기신론소』·『화엄일승법계도』","『화엄경소』·『십문화쟁론』"],
+    ans: 1,
+    exp: "원효의 대표 저술은 <strong>『십문화쟁론(十門和諍論)』</strong>과 <strong>『대승기신론소(大乘起信論疏)』</strong>입니다. 『화엄일승법계도』는 의상의 저술입니다. 『대승기신론소』는 인도·중국 불교계에도 영향을 미쳤을 정도로 높이 평가받았습니다.",
+    keywords: ["십문화쟁론","대승기신론소","원효저술","화엄일승법계도"]
+  },
+  {
+    q: "원효가 아미타 신앙을 민중에게 전파하며 스스로 부르고 다닌 노래는?",
+    opts: ["처용가","무애가","정읍사","제망매가"],
+    ans: 1,
+    exp: "<strong>무애가(無碍歌)</strong>는 원효가 '아무것에도 걸림이 없다'는 뜻의 무애(無碍)를 노래한 것입니다. 원효는 전국을 돌아다니며 이 노래를 부르고 '나무아미타불'만 외우면 누구나 극락왕생할 수 있다고 가르쳐, 귀족 중심의 불교를 민중에게까지 확산시켰습니다.",
+    keywords: ["무애가","아미타신앙","정토신앙","불교대중화"]
+  },
+  {
+    q: "의상이 당에 유학하여 화엄사상을 배운 스승은?",
+    opts: ["현장","지엄","혜능","도선"],
+    ans: 1,
+    exp: "의상은 당에 유학하여 <strong>지엄(智儼)</strong>에게 화엄을 배웠습니다. 지엄은 화엄종 2조(二祖)로, 의상은 지엄 문하에서 화엄사상의 핵심을 체득하고 귀국하였습니다. 의상과 함께 지엄의 문하에 있었던 법장(法藏)은 훗날 화엄종 3조가 됩니다.",
+    keywords: ["지엄","당유학","화엄2조","의상스승"]
+  },
+  {
+    q: "의상이 귀국 후 화엄사상의 핵심을 210자의 게송과 도형으로 정리한 저술은?",
+    opts: ["『십문화쟁론』","『화엄경소』","『화엄일승법계도』","『대승기신론소』"],
+    ans: 2,
+    exp: "<strong>『화엄일승법계도(華嚴一乘法界圖)』</strong>는 의상이 화엄사상을 210자의 게송과 도인(圖印) 형식으로 압축한 저술입니다. 복잡한 화엄 교의를 하나의 도형으로 표현하여 '법계도인(法界圖印)'이라고도 불립니다. 의상 화엄학의 독창성을 보여주는 핵심 텍스트입니다.",
+    keywords: ["화엄일승법계도","210자","게송","의상저술"]
+  },
+  {
+    q: "의상의 화엄사상에서 '하나 속에 전체가 있고, 전체 속에 하나가 있다'는 논리를 나타내는 개념은?",
+    opts: ["교관겸수","일심화쟁","일즉다·다즉일","돈오점수"],
+    ans: 2,
+    exp: "<strong>일즉다·다즉일(一卽多·多卽一)</strong>은 화엄사상의 핵심 논리로, '하나 속에 많음이 있고, 많음 속에 하나가 있다'는 모든 존재의 상호 연관성과 조화를 설명합니다. 의상은 이 논리로 우주 만물이 서로 유기적으로 연결되어 있음을 설파하였으며, 이는 통일신라 전제왕권의 사상적 근거가 되었습니다.",
+    keywords: ["일즉다다즉일","화엄논리","상호연관성","국가통합이념"]
+  },
+  {
+    q: "의상의 화엄사상이 통일신라 국가 이념과 결합된 방식으로 가장 적절한 것은?",
+    opts: [
+      "아미타 신앙으로 민중을 결속시켜 왕권을 강화하였다",
+      "일즉다·다즉일의 조화 논리로 중앙집권적 전제왕권을 사상적으로 뒷받침하였다",
+      "화쟁사상으로 종파 갈등을 없애 왕실의 불교 통제를 용이하게 하였다",
+      "선종 도입으로 지방 호족 세력과의 연계를 강화하였다"
+    ],
+    ans: 1,
+    exp: "의상의 <strong>화엄사상</strong>은 '하나 속에 모든 것이 통합된다'는 논리로 중앙집권적 전제왕권의 정당성을 사상적으로 뒷받침하였습니다. 삼국을 통일한 신라 왕실은 다양한 세력을 하나로 통합하는 이념이 필요했으며, 화엄의 일즉다·다즉일 논리가 그 역할을 담당하였습니다.",
+    keywords: ["전제왕권","화엄사상","중앙집권","국가이념"]
+  },
+  {
+    q: "원효와 의상에 대한 비교 서술로 옳지 않은 것은?",
+    opts: [
+      "원효는 입당을 포기하고 귀국하여 독자적 사상을 전개하였고, 의상은 당 유학 후 화엄사상을 체계화하였다",
+      "원효의 화쟁사상은 종파 간 대립 극복을 목표로 하였고, 의상의 화엄사상은 전제왕권을 사상적으로 뒷받침하였다",
+      "원효는 민중을 지향하였고, 의상은 국가·왕권을 지향하였다",
+      "원효는 부석사를 비롯한 화엄 10찰을 건립하였고, 의상은 무애가로 아미타 신앙을 대중화하였다"
+    ],
+    ans: 3,
+    exp: "④가 틀렸습니다. <strong>부석사를 비롯한 화엄 10찰을 건립한 것은 의상</strong>이고, <strong>무애가로 아미타 신앙을 대중화한 것은 원효</strong>입니다. 두 승려의 활동이 서로 뒤바뀌어 있습니다. 비교 문제에서 자주 출제되는 함정 유형이므로 반드시 구분하여 암기해야 합니다.",
+    keywords: ["부석사","화엄10찰","의상","무애가","원효"]
+  }
+];
+
+let currentQuestions = [];
+let wrongIds = [];
+let answered = [];
+let score = 0;
+let isWrongOnlyMode = false;
+
+function init(questions, wrongOnly = false) {
+  currentQuestions = questions;
+  wrongIds = [];
+  answered = new Array(questions.length).fill(false);
+  score = 0;
+  isWrongOnlyMode = wrongOnly;
+  document.getElementById('wrongBanner').className = wrongOnly ? 'wrong-only-banner show' : 'wrong-only-banner';
+  document.getElementById('resultPanel').className = 'result-panel';
+  renderAll();
+  updateProgress();
+}
+
+function renderAll() {
+  const area = document.getElementById('quizArea');
+  area.innerHTML = currentQuestions.map((q, i) => renderCard(q, i)).join('');
+}
+
+function renderCard(q, i) {
+  const optsHtml = q.opts.map((o, oi) =>
+    `<button class="opt-btn" id="opt_${i}_${oi}" onclick="choose(${i},${oi})">${String.fromCharCode(9312+oi)} ${o}</button>`
+  ).join('');
+  const kwHtml = q.keywords.map(k => `<span class="keyword-chip">${k}</span>`).join('');
+  return `
+  <div class="quiz-card" id="card_${i}">
+    <span class="q-num">Q${i+1}</span>
+    <p class="q-text">${q.q}</p>
+    <div class="options">${optsHtml}</div>
+    <div class="explanation" id="exp_${i}">
+      <p>${q.exp}</p>
+      <div style="margin-top:0.5rem;">${kwHtml}</div>
+    </div>
+  </div>`;
+}
+
+function choose(qIdx, optIdx) {
+  if (answered[qIdx]) return;
+  answered[qIdx] = true;
+  const q = currentQuestions[qIdx];
+  const isCorrect = optIdx === q.ans;
+  if (isCorrect) { score++; }
+  else { wrongIds.push(qIdx); }
+
+  for (let i = 0; i < q.opts.length; i++) {
+    const btn = document.getElementById(`opt_${qIdx}_${i}`);
+    btn.disabled = true;
+    if (i === q.ans) btn.classList.add(isCorrect && i === optIdx ? 'correct' : 'reveal');
+    if (!isCorrect && i === optIdx) btn.classList.add('wrong');
+  }
+  document.getElementById(`exp_${qIdx}`).classList.add('show');
+  updateProgress();
+
+  if (answered.every(Boolean)) {
+    setTimeout(showResult, 600);
+  }
+}
+
+function updateProgress() {
+  const done = answered.filter(Boolean).length;
+  const total = currentQuestions.length;
+  document.getElementById('pbar').style.width = (done/total*100)+'%';
+  document.getElementById('plabel').textContent = `${done} / ${total} 완료`;
+}
+
+function showResult() {
+  const total = currentQuestions.length;
+  const pct = Math.round(score/total*100);
+  document.getElementById('scoreNum').textContent = score;
+  document.getElementById('scoreDenom').textContent = `/ ${total}`;
+  const titles = ['다시 도전해 보세요', '기초를 다져봅시다', '조금 더 공부가 필요해요', '잘 이해하고 있어요', '거의 완벽해요', '만점! 완벽합니다'];
+  const msgs = [
+    '모범답안의 키워드를 다시 정리해 보세요.',
+    '필수 키워드 표를 먼저 암기해 보세요.',
+    '틀린 문제의 해설을 꼼꼼히 읽어보세요.',
+    '오답 문제를 한 번 더 풀어보면 완성됩니다.',
+    '핵심 키워드를 시험장에서도 떠올릴 수 있을 거예요.',
+    '이 주제는 완벽하게 정복했습니다!'
+  ];
+  const idx = Math.min(Math.floor(pct/20), 5);
+  document.getElementById('resultTitle').textContent = titles[idx];
+  document.getElementById('resultMsg').textContent = msgs[idx];
+  document.getElementById('resultPanel').className = 'result-panel show';
+  document.getElementById('resultPanel').scrollIntoView({behavior:'smooth'});
+}
+
+function retryWrong() {
+  if (wrongIds.length === 0) { alert('모든 문제를 맞혔습니다!'); return; }
+  const wrongQs = wrongIds.map(i => currentQuestions[i]);
+  init(wrongQs, true);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function restartAll() {
+  init(ALL_QUESTIONS, false);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+init(ALL_QUESTIONS);
+</script>
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>의천·지눌 불교 통합 운동 4지선다 퀴즈</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; background: #f5f4f0; color: #1a1a18; min-height: 100vh; padding: 2rem 1rem; }
+  .container { max-width: 720px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 2rem; }
+  header h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.4rem; }
+  header p { font-size: 0.875rem; color: #5f5e5a; }
+  .progress-bar-wrap { background: #d3d1c7; border-radius: 99px; height: 6px; margin-bottom: 0.5rem; }
+  .progress-bar { height: 6px; border-radius: 99px; background: #1D9E75; transition: width 0.4s; }
+  .progress-label { font-size: 0.8rem; color: #5f5e5a; text-align: right; margin-bottom: 1.5rem; }
+  .quiz-card { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 14px; padding: 1.75rem; margin-bottom: 1.25rem; }
+  .q-num { font-size: 0.75rem; font-weight: 600; color: #0F6E56; background: #E1F5EE; padding: 3px 10px; border-radius: 99px; display: inline-block; margin-bottom: 0.75rem; }
+  .q-text { font-size: 1rem; line-height: 1.7; font-weight: 500; margin-bottom: 1.25rem; }
+  .options { display: flex; flex-direction: column; gap: 0.6rem; }
+  .opt-btn { background: #fff; border: 0.5px solid #b4b2a9; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.9rem; line-height: 1.5; text-align: left; cursor: pointer; transition: all 0.15s; color: #1a1a18; }
+  .opt-btn:hover:not(:disabled) { background: #f1efe8; border-color: #888780; }
+  .opt-btn.correct { background: #E1F5EE; border-color: #1D9E75; color: #085041; }
+  .opt-btn.wrong { background: #FAECE7; border-color: #993C1D; color: #4A1B0C; }
+  .opt-btn.reveal { background: #E1F5EE; border-color: #1D9E75; color: #085041; }
+  .opt-btn:disabled { cursor: default; }
+  .explanation { margin-top: 1rem; padding: 0.875rem 1rem; background: #f1efe8; border-radius: 10px; font-size: 0.875rem; line-height: 1.7; color: #2c2c2a; display: none; }
+  .explanation.show { display: block; }
+  .explanation strong { color: #0F6E56; }
+  .result-panel { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 14px; padding: 2rem; text-align: center; display: none; }
+  .result-panel.show { display: block; }
+  .score-circle { width: 100px; height: 100px; border-radius: 50%; background: #E1F5EE; border: 3px solid #1D9E75; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+  .score-circle .num { font-size: 2rem; font-weight: 700; color: #0F6E56; line-height: 1; }
+  .score-circle .denom { font-size: 0.8rem; color: #1D9E75; }
+  .result-panel h2 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+  .result-panel p { font-size: 0.9rem; color: #5f5e5a; margin-bottom: 1.5rem; }
+  .btn-row { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 0.6rem 1.4rem; border-radius: 8px; font-size: 0.875rem; cursor: pointer; border: 0.5px solid #b4b2a9; background: #fff; color: #1a1a18; transition: background 0.15s; }
+  .btn:hover { background: #f1efe8; }
+  .btn.primary { background: #0F6E56; color: #fff; border-color: #0F6E56; }
+  .btn.primary:hover { background: #085041; }
+  .wrong-only-banner { background: #FAECE7; border: 0.5px solid #F0997B; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.875rem; color: #4A1B0C; margin-bottom: 1.25rem; display: none; }
+  .wrong-only-banner.show { display: block; }
+  .keyword-chip { display: inline-block; background: #E6F1FB; color: #0C447C; font-size: 0.75rem; padding: 2px 8px; border-radius: 99px; margin: 2px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>의천 · 지눌 불교 통합 운동 핵심 퀴즈</h1>
+    <p>고려 불교 통합 운동 비교 — 4지선다 10문항</p>
+  </header>
+
+  <div class="progress-bar-wrap"><div class="progress-bar" id="pbar" style="width:0%"></div></div>
+  <div class="progress-label" id="plabel">0 / 10 완료</div>
+
+  <div class="wrong-only-banner" id="wrongBanner">오답 재도전 모드 — 틀린 문제만 표시됩니다.</div>
+
+  <div id="quizArea"></div>
+  <div class="result-panel" id="resultPanel">
+    <div class="score-circle"><span class="num" id="scoreNum">0</span><span class="denom" id="scoreDenom">/ 10</span></div>
+    <h2 id="resultTitle"></h2>
+    <p id="resultMsg"></p>
+    <div class="btn-row">
+      <button class="btn primary" onclick="retryWrong()">오답만 다시 풀기</button>
+      <button class="btn" onclick="restartAll()">전체 다시 풀기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ALL_QUESTIONS = [
+  {
+    q: "의천과 지눌의 불교 통합 운동이 갖는 공통점으로 가장 적절한 것은?",
+    opts: [
+      "두 사람 모두 선종 중심으로 교종을 흡수하였다",
+      "고려 불교계의 분열과 타락을 극복하려 한 통합 운동이었다",
+      "왕실의 후원을 거부하고 민중 불교를 지향하였다",
+      "교리 연구를 배척하고 좌선 수행만을 강조하였다"
+    ],
+    ans: 1,
+    exp: "<strong>의천과 지눌</strong>은 모두 고려 불교계의 분열과 타락을 극복하고자 불교 통합 운동을 추진하였다는 공통점이 있습니다. 다만 통합의 출발점(의천=교종, 지눌=선종)과 방식에는 뚜렷한 차이가 있었습니다.",
+    keywords: ["공통점","분열·타락 극복","불교 통합운동"]
+  },
+  {
+    q: "의천이 통합 운동을 추진한 시대적 배경으로 옳은 것은?",
+    opts: ["나말여초 호족기","11세기 문벌귀족기","무신집권기","원 간섭기"],
+    ans: 1,
+    exp: "<strong>의천</strong>은 11세기 문벌귀족기에 활동하였으며, 왕실과 문벌귀족의 후원을 바탕으로 교단 중심의 통합을 추진하였습니다. 반면 지눌은 12세기 말 무신집권기에 활동하였습니다. 시대 배경의 차이가 통합 방식의 차이를 설명하는 핵심 요소입니다.",
+    keywords: ["의천","11세기","문벌귀족기","왕실 후원"]
+  },
+  {
+    q: "의천이 교학 연구와 수행의 조화를 강조하며 내세운 사상은?",
+    opts: ["돈오점수","정혜쌍수","교관겸수","선교일치"],
+    ans: 2,
+    exp: "<strong>교관겸수(敎觀兼修)</strong>는 의천이 주장한 사상으로, 교학(敎) 연구와 좌선 수행(觀)을 함께 닦아야 한다는 입장입니다. 교종 중심에서 선종을 포용하려는 의천의 태도가 반영되어 있습니다. 돈오점수·정혜쌍수는 지눌의 사상이므로 혼동하지 않도록 주의합니다.",
+    keywords: ["교관겸수","교학+수행","의천"]
+  },
+  {
+    q: "의천이 교단 통합을 위해 국청사를 중심으로 개창한 종파는?",
+    opts: ["조계종","천태종","법상종","화엄종"],
+    ans: 1,
+    exp: "<strong>천태종</strong>은 의천이 국청사를 중심으로 개창한 종파로, 교종의 입장에서 선종을 포용하여 교단 통합을 이루려는 시도였습니다. 조계종은 지눌의 수행 체계를 기반으로 성립된 종파이므로 구별해야 합니다.",
+    keywords: ["천태종","국청사","의천","교단통합"]
+  },
+  {
+    q: "의천이 불교 교리를 체계적으로 정리하기 위해 편찬한 저술은?",
+    opts: ["『신편제종교장총록』","『직지심체요절』","『삼국유사』","『왕오천축국전』"],
+    ans: 0,
+    exp: "<strong>『신편제종교장총록』</strong>은 의천이 송·요·일본 등에서 수집한 불교 교장(주석서)을 정리하여 편찬한 목록입니다. 이는 의천의 통합 운동이 교리 체계 정비를 중시했음을 보여 줍니다.",
+    keywords: ["신편제종교장총록","교리 정리","의천"]
+  },
+  {
+    q: "의천의 통합 운동이 보인 한계로 가장 적절한 것은?",
+    opts: [
+      "민중의 지지를 얻지 못해 즉시 소멸하였다",
+      "왕실·문벌귀족 후원에 기반한 교단 중심 통합이어서 사후 교단이 다시 분열되었다",
+      "선종을 완전히 배척하여 갈등을 키웠다",
+      "교리 연구를 소홀히 하여 사상적 기반이 약하였다"
+    ],
+    ans: 1,
+    exp: "의천의 통합은 <strong>왕실과 문벌귀족의 후원에 기반한 교단 조직 중심의 통합</strong>이었기 때문에, 그의 사후에는 천태종 교단이 다시 분열되는 한계를 드러냈습니다. 권력과 후원에 의존한 통합의 구조적 약점이라 할 수 있습니다.",
+    keywords: ["교단 중심 통합","사후 분열","후원 의존"]
+  },
+  {
+    q: "지눌이 무신집권기 불교의 세속화·타락에 맞서 일으킨 수행 중심의 개혁 결사는?",
+    opts: ["백련결사","정혜결사(수선사)","향도","결사대장경"],
+    ans: 1,
+    exp: "<strong>정혜결사</strong>는 지눌이 무신집권기 불교의 타락에 맞서 일으킨 수행 중심의 자체 개혁 운동으로, 이후 <strong>수선사</strong>로 발전하였습니다. 의천의 통합이 왕실 후원에 기댄 데 비해, 지눌의 운동은 불교계 내부의 자정(自淨) 성격을 띤다는 점이 대비됩니다.",
+    keywords: ["정혜결사","수선사","자체 개혁","지눌"]
+  },
+  {
+    q: "지눌이 정립한 수행 체계로, 선종 중심에서 교종을 포용하는 사상에 해당하는 것은?",
+    opts: [
+      "교관겸수와 성상겸학",
+      "돈오점수와 정혜쌍수",
+      "이판사판과 색즉시공",
+      "수시력과 일조편법"
+    ],
+    ans: 1,
+    exp: "<strong>돈오점수(頓悟漸修)</strong>는 단번에 깨친 뒤 점진적으로 수행한다는 것이고, <strong>정혜쌍수(定慧雙修)</strong>는 선정(定)과 지혜(慧)를 함께 닦는다는 수행론입니다. 지눌은 이를 통해 선과 교가 본질적으로 다르지 않음을 강조하였습니다. 교관겸수는 의천의 사상입니다.",
+    keywords: ["돈오점수","정혜쌍수","선·교 일치","지눌"]
+  },
+  {
+    q: "지눌의 수행 체계와 사상을 기반으로 성립된 종파는?",
+    opts: ["천태종","조계종","법상종","진언종"],
+    ans: 1,
+    exp: "<strong>조계종</strong>은 지눌의 돈오점수·정혜쌍수 수행 체계를 기반으로 성립되었으며, 이후 고려 불교계에 큰 영향을 미치며 발전하였습니다. 천태종은 의천이 개창한 종파이므로 반드시 구별해야 합니다.",
+    keywords: ["조계종","지눌","수행 체계 기반"]
+  },
+  {
+    q: "의천과 지눌의 통합 방식 차이를 가장 올바르게 비교한 것은?",
+    opts: [
+      "의천은 수행 체계 중심, 지눌은 교단 조직 중심으로 통합하였다",
+      "의천은 교단 조직 중심, 지눌은 수행·사상 체계 중심으로 통합하였다",
+      "둘 다 교단 조직만을 통합 수단으로 삼았다",
+      "둘 다 사상 체계 정비에는 관심이 없었다"
+    ],
+    ans: 1,
+    exp: "<strong>의천이 교단 조직 중심의 통합</strong>을 시도하였다면, <strong>지눌은 수행과 사상 체계 중심의 통합</strong>을 추진하였습니다. 출발점도 의천은 교종(→선종 포용), 지눌은 선종(→교종 포용)으로 반대였습니다. 특히 지눌의 선교 통합은 이후 고려 불교계에 큰 영향을 미치며 조계종 발전으로 이어졌습니다.",
+    keywords: ["교단 vs 수행·사상","비교 축","조계종 발전"]
+  }
+];
+
+let currentQuestions = [];
+let wrongIds = [];
+let answered = [];
+let score = 0;
+let isWrongOnlyMode = false;
+
+function init(questions, wrongOnly = false) {
+  currentQuestions = questions;
+  wrongIds = [];
+  answered = new Array(questions.length).fill(false);
+  score = 0;
+  isWrongOnlyMode = wrongOnly;
+  document.getElementById('wrongBanner').className = wrongOnly ? 'wrong-only-banner show' : 'wrong-only-banner';
+  document.getElementById('resultPanel').className = 'result-panel';
+  renderAll();
+  updateProgress();
+}
+
+function renderAll() {
+  const area = document.getElementById('quizArea');
+  area.innerHTML = currentQuestions.map((q, i) => renderCard(q, i)).join('');
+}
+
+function renderCard(q, i) {
+  const optsHtml = q.opts.map((o, oi) =>
+    `<button class="opt-btn" id="opt_${i}_${oi}" onclick="choose(${i},${oi})">${String.fromCharCode(9312+oi)} ${o}</button>`
+  ).join('');
+  const kwHtml = q.keywords.map(k => `<span class="keyword-chip">${k}</span>`).join('');
+  return `
+  <div class="quiz-card" id="card_${i}">
+    <span class="q-num">Q${i+1}</span>
+    <p class="q-text">${q.q}</p>
+    <div class="options">${optsHtml}</div>
+    <div class="explanation" id="exp_${i}">
+      <p>${q.exp}</p>
+      <div style="margin-top:0.5rem;">${kwHtml}</div>
+    </div>
+  </div>`;
+}
+
+function choose(qIdx, optIdx) {
+  if (answered[qIdx]) return;
+  answered[qIdx] = true;
+  const q = currentQuestions[qIdx];
+  const isCorrect = optIdx === q.ans;
+  if (isCorrect) { score++; }
+  else { wrongIds.push(qIdx); }
+
+  for (let i = 0; i < q.opts.length; i++) {
+    const btn = document.getElementById(`opt_${qIdx}_${i}`);
+    btn.disabled = true;
+    if (i === q.ans) btn.classList.add(isCorrect && i === optIdx ? 'correct' : 'reveal');
+    if (!isCorrect && i === optIdx) btn.classList.add('wrong');
+  }
+  document.getElementById(`exp_${qIdx}`).classList.add('show');
+  updateProgress();
+
+  if (answered.every(Boolean)) {
+    setTimeout(showResult, 600);
+  }
+}
+
+function updateProgress() {
+  const done = answered.filter(Boolean).length;
+  const total = currentQuestions.length;
+  document.getElementById('pbar').style.width = (done/total*100)+'%';
+  document.getElementById('plabel').textContent = `${done} / ${total} 완료`;
+}
+
+function showResult() {
+  const total = currentQuestions.length;
+  const pct = Math.round(score/total*100);
+  document.getElementById('scoreNum').textContent = score;
+  document.getElementById('scoreDenom').textContent = `/ ${total}`;
+  const titles = ['다시 도전해 보세요', '기초를 다져봅시다', '조금 더 공부가 필요해요', '잘 이해하고 있어요', '거의 완벽해요', '만점! 완벽합니다'];
+  const msgs = [
+    '모범답안의 키워드를 다시 정리해 보세요.',
+    '필수 키워드 표를 먼저 암기해 보세요.',
+    '틀린 문제의 해설을 꼼꼼히 읽어보세요.',
+    '오답 문제를 한 번 더 풀어보면 완성됩니다.',
+    '핵심 키워드를 시험장에서도 떠올릴 수 있을 거예요.',
+    '이 주제는 완벽하게 정복했습니다!'
+  ];
+  const idx = Math.min(Math.floor(pct/20), 5);
+  document.getElementById('resultTitle').textContent = titles[idx];
+  document.getElementById('resultMsg').textContent = msgs[idx];
+  document.getElementById('resultPanel').className = 'result-panel show';
+  document.getElementById('resultPanel').scrollIntoView({behavior:'smooth'});
+}
+
+function retryWrong() {
+  if (wrongIds.length === 0) { alert('모든 문제를 맞혔습니다!'); return; }
+  const wrongQs = wrongIds.map(i => currentQuestions[i]);
+  init(wrongQs, true);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function restartAll() {
+  init(ALL_QUESTIONS, false);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+init(ALL_QUESTIONS);
+</script>
+</body>
+</html>

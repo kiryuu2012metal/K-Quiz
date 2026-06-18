@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>구휼제도·환곡 4지선다 퀴즈</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; background: #f5f4f0; color: #1a1a18; min-height: 100vh; padding: 2rem 1rem; }
+  .container { max-width: 720px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 2rem; }
+  header h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.4rem; }
+  header p { font-size: 0.875rem; color: #5f5e5a; }
+  .progress-bar-wrap { background: #d3d1c7; border-radius: 99px; height: 6px; margin-bottom: 0.5rem; }
+  .progress-bar { height: 6px; border-radius: 99px; background: #1D9E75; transition: width 0.4s; }
+  .progress-label { font-size: 0.8rem; color: #5f5e5a; text-align: right; margin-bottom: 1.5rem; }
+  .quiz-card { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 14px; padding: 1.75rem; margin-bottom: 1.25rem; }
+  .q-num { font-size: 0.75rem; font-weight: 600; color: #0F6E56; background: #E1F5EE; padding: 3px 10px; border-radius: 99px; display: inline-block; margin-bottom: 0.75rem; }
+  .q-text { font-size: 1rem; line-height: 1.7; font-weight: 500; margin-bottom: 1.25rem; }
+  .options { display: flex; flex-direction: column; gap: 0.6rem; }
+  .opt-btn { background: #fff; border: 0.5px solid #b4b2a9; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.9rem; line-height: 1.5; text-align: left; cursor: pointer; transition: all 0.15s; color: #1a1a18; }
+  .opt-btn:hover:not(:disabled) { background: #f1efe8; border-color: #888780; }
+  .opt-btn.correct { background: #E1F5EE; border-color: #1D9E75; color: #085041; }
+  .opt-btn.wrong { background: #FAECE7; border-color: #993C1D; color: #4A1B0C; }
+  .opt-btn.reveal { background: #E1F5EE; border-color: #1D9E75; color: #085041; }
+  .opt-btn:disabled { cursor: default; }
+  .explanation { margin-top: 1rem; padding: 0.875rem 1rem; background: #f1efe8; border-radius: 10px; font-size: 0.875rem; line-height: 1.7; color: #2c2c2a; display: none; }
+  .explanation.show { display: block; }
+  .explanation strong { color: #0F6E56; }
+  .result-panel { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 14px; padding: 2rem; text-align: center; display: none; }
+  .result-panel.show { display: block; }
+  .score-circle { width: 100px; height: 100px; border-radius: 50%; background: #E1F5EE; border: 3px solid #1D9E75; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+  .score-circle .num { font-size: 2rem; font-weight: 700; color: #0F6E56; line-height: 1; }
+  .score-circle .denom { font-size: 0.8rem; color: #1D9E75; }
+  .result-panel h2 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+  .result-panel p { font-size: 0.9rem; color: #5f5e5a; margin-bottom: 1.5rem; }
+  .btn-row { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 0.6rem 1.4rem; border-radius: 8px; font-size: 0.875rem; cursor: pointer; border: 0.5px solid #b4b2a9; background: #fff; color: #1a1a18; transition: background 0.15s; }
+  .btn:hover { background: #f1efe8; }
+  .btn.primary { background: #0F6E56; color: #fff; border-color: #0F6E56; }
+  .btn.primary:hover { background: #085041; }
+  .wrong-only-banner { background: #FAECE7; border: 0.5px solid #F0997B; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.875rem; color: #4A1B0C; margin-bottom: 1.25rem; display: none; }
+  .wrong-only-banner.show { display: block; }
+  .keyword-chip { display: inline-block; background: #E6F1FB; color: #0C447C; font-size: 0.75rem; padding: 2px 8px; border-radius: 99px; margin: 2px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>구휼제도 · 환곡 핵심 퀴즈</h1>
+    <p>조선시대 구휼제도와 환곡의 변질 — 4지선다 10문항</p>
+  </header>
+
+  <div class="progress-bar-wrap"><div class="progress-bar" id="pbar" style="width:0%"></div></div>
+  <div class="progress-label" id="plabel">0 / 10 완료</div>
+
+  <div class="wrong-only-banner" id="wrongBanner">오답 재도전 모드 — 틀린 문제만 표시됩니다.</div>
+
+  <div id="quizArea"></div>
+  <div class="result-panel" id="resultPanel">
+    <div class="score-circle"><span class="num" id="scoreNum">0</span><span class="denom" id="scoreDenom">/ 10</span></div>
+    <h2 id="resultTitle"></h2>
+    <p id="resultMsg"></p>
+    <div class="btn-row">
+      <button class="btn primary" onclick="retryWrong()">오답만 다시 풀기</button>
+      <button class="btn" onclick="restartAll()">전체 다시 풀기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ALL_QUESTIONS = [
+  {
+    q: "고구려 고국천왕 때 을파소의 건의로 실시된 구휼제도로, 춘궁기에 곡식을 빌려주고 가을에 갚게 한 제도는?",
+    opts: ["의창","사창","환곡","진대법"],
+    ans: 3,
+    exp: "<strong>진대법(賑貸法)</strong>은 고구려 고국천왕 194년에 시행된 최초의 공적 구휼제도입니다. 을파소의 건의로 실시되었으며, 빈민 구제와 고리대 억제를 목적으로 하였습니다. 이후 고려의 의창, 조선의 환곡제도의 원형이 되었습니다.",
+    keywords: ["진대법","을파소","고국천왕","빈민구제"]
+  },
+  {
+    q: "고려 성종 때 빈민 구제를 위해 흑창을 개편하여 만든 제도는?",
+    opts: ["상평창","진휼청","의창","사창"],
+    ans: 2,
+    exp: "<strong>의창(義倉)</strong>은 고려 성종 때 흑창을 개편한 것으로, 봄에 곡식을 대여하고 가을에 상환받는 방식으로 운영되었습니다. 조선에도 계승되었으나 재정 부족으로 점차 유명무실해지고 환곡으로 대체됩니다.",
+    keywords: ["의창","흑창","성종","고려"]
+  },
+  {
+    q: "풍년에는 시가로 곡물을 매입하고 흉년에는 저가로 방출하여 물가를 안정시키던 제도는?",
+    opts: ["의창","상평창","환곡","진휼청"],
+    ans: 1,
+    exp: "<strong>상평창(常平倉)</strong>은 물가 조절 기능이 핵심입니다. 풍년에 시가로 곡물을 매입하여 곡가 폭락을 막고, 흉년에 저가로 방출하여 곡가 폭등을 억제하는 방식으로 운영되었습니다. 구휼 기능도 함께 담당하였습니다.",
+    keywords: ["상평창","물가조절","풍년매입","흉년방출"]
+  },
+  {
+    q: "조선시대 재해 발생 시 임시로 설치하여 백성을 구제하던 기관은?",
+    opts: ["비변사","의창","상평창","진휼청"],
+    ans: 3,
+    exp: "<strong>진휼청(賑恤廳)</strong>은 재해·기근 발생 시 임시로 설치된 구제기관입니다. 평시에는 상설 기관이 아니며, 비상시에 운영되는 특징이 있습니다. 조선의 구휼 체계는 의창·상평창·진휼청이 각자의 역할을 분담하는 방식으로 운영되었습니다.",
+    keywords: ["진휼청","임시기관","재해구제","조선"]
+  },
+  {
+    q: "환곡이 본래 기능을 잃고 국가 재정 수입원으로 고착화되기 시작한 직접적 계기는?",
+    opts: ["병자호란 이후 청의 배상금","임진왜란으로 인한 재정 악화","삼정의 문란 심화","흥선대원군의 재정 개혁"],
+    ans: 1,
+    exp: "17세기 <strong>임진왜란(1592~1598)</strong> 이후 전쟁으로 인한 극심한 재정 악화가 환곡 변질의 직접적 계기입니다. 국가가 재정을 보충하기 위해 환곡의 이자(모곡)를 사실상 세금으로 전용하면서, 18세기 전반부터 환곡은 구휼 기능보다 재정 수입원으로 고착화되었습니다.",
+    keywords: ["임진왜란","재정악화","17세기","재정수입원"]
+  },
+  {
+    q: "환곡 운영에서 법정 이율을 초과하여 불법으로 추가 징수한 이자를 무엇이라 하는가?",
+    opts: ["잡비","전세","대동미","모곡"],
+    ans: 3,
+    exp: "<strong>모곡(耗穀)</strong>은 원래 곡식 보관 중 발생하는 손실을 보전하기 위해 원곡의 10분의 1을 더 받던 것인데, 조선 후기에는 이를 훨씬 초과하여 징수하는 수탈의 수단으로 변질되었습니다. 모곡 외에도 각종 잡비를 추가로 부과하였습니다.",
+    keywords: ["모곡","잡비","불법징수","환곡수탈"]
+  },
+  {
+    q: "환곡의 문란이 전정·군정의 폐단과 함께 묶여 불리는 조선 후기의 대표적 사회문제는?",
+    opts: ["삼포왜란","삼정의 문란","삼정승 제도","삼사의 언론활동"],
+    ans: 1,
+    exp: "<strong>삼정의 문란</strong>은 전정(토지세)·군정(군역세)·환곡 세 가지 수취 제도의 폐단을 통칭합니다. 조선 후기 지방관과 아전의 부정부패가 심각해지면서 백성의 부담이 극도로 증가하였고, 이는 농민 봉기의 직접적 원인이 되었습니다.",
+    keywords: ["삼정의문란","전정","군정","환곡"]
+  },
+  {
+    q: "삼정의 문란에 저항하여 1862년 진주에서 시작되어 전국으로 확산된 농민봉기는?",
+    opts: ["홍경래의 난","임술농민봉기","동학농민운동","갑오농민전쟁"],
+    ans: 1,
+    exp: "<strong>임술농민봉기(1862)</strong>는 경상도 진주에서 시작하여 전국 70여 곳으로 확산된 대규모 농민 저항입니다. 삼정 중 특히 환곡의 수탈이 직접적 원인이었습니다. 정부는 이에 대응하여 삼정이정청을 설치하였으나 근본적 개혁에는 실패하였습니다.",
+    keywords: ["임술농민봉기","1862","진주","삼정이정청"]
+  },
+  {
+    q: "흥선대원군이 환곡을 폐지하고 실시한 사창제의 핵심 운영 원칙으로 옳은 것은?",
+    opts: [
+      "중앙 호조가 직접 관리하고 지방관이 감독한다",
+      "향촌 단위 자치 운영으로 지방관의 개입을 배제하고 이자율을 제한한다",
+      "사대부가 자발적으로 출연한 재원으로만 운영한다",
+      "도별로 감영이 일괄 관리하여 횡령을 방지한다"
+    ],
+    ans: 1,
+    exp: "<strong>사창제(社倉制)</strong>는 향촌 공동체가 자율적으로 운영하는 방식으로, 지방관의 개입을 원천 배제하는 것이 핵심입니다. 이자율을 10% 이내로 제한하여 수탈을 막고자 하였습니다. 그러나 재정 기반 미흡과 향촌 자치 역량 부족으로 전국 시행에 한계가 있었습니다.",
+    keywords: ["사창제","향촌자치","이자율제한","지방관배제"]
+  },
+  {
+    q: "조선 후기 환곡의 변질이 역사적으로 갖는 의미를 가장 올바르게 서술한 것은?",
+    opts: [
+      "단순한 지방 행정의 실패로, 중앙 정부의 의지만 있으면 즉시 개혁 가능하였다",
+      "삼정의 문란은 지방 아전들의 개인 비리에 불과하였다",
+      "조선 왕조 지배체제의 구조적 모순을 상징하며, 동학농민운동으로 이어지는 민중 저항의 역사적 배경이 되었다",
+      "환곡 문제는 흥선대원군의 사창제 실시로 완전히 해결되었다"
+    ],
+    ans: 2,
+    exp: "환곡의 변질은 <strong>단순한 행정적 폐단이 아니라 조선 후기 지배체제의 구조적 모순</strong>을 상징합니다. 토지제도·군역제·환곡이 모두 함께 붕괴된 것은 체계 전반의 한계를 드러낸 것이며, 이는 동학농민운동(1894)으로 이어지는 민중 저항의 역사적 배경이 되었고, 궁극적으로 근대 이행기 국가 체제 재편의 과제를 예고하는 것이었습니다.",
+    keywords: ["구조적모순","동학농민운동","지배체제","근대이행"]
+  }
+];
+
+let currentQuestions = [];
+let wrongIds = [];
+let answered = [];
+let score = 0;
+let isWrongOnlyMode = false;
+
+function init(questions, wrongOnly = false) {
+  currentQuestions = questions;
+  wrongIds = [];
+  answered = new Array(questions.length).fill(false);
+  score = 0;
+  isWrongOnlyMode = wrongOnly;
+  document.getElementById('wrongBanner').className = wrongOnly ? 'wrong-only-banner show' : 'wrong-only-banner';
+  document.getElementById('resultPanel').className = 'result-panel';
+  renderAll();
+  updateProgress();
+}
+
+function renderAll() {
+  const area = document.getElementById('quizArea');
+  area.innerHTML = currentQuestions.map((q, i) => renderCard(q, i)).join('');
+}
+
+function renderCard(q, i) {
+  const optsHtml = q.opts.map((o, oi) =>
+    `<button class="opt-btn" id="opt_${i}_${oi}" onclick="choose(${i},${oi})">${String.fromCharCode(9312+oi)} ${o}</button>`
+  ).join('');
+  const kwHtml = q.keywords.map(k => `<span class="keyword-chip">${k}</span>`).join('');
+  return `
+  <div class="quiz-card" id="card_${i}">
+    <span class="q-num">Q${i+1}</span>
+    <p class="q-text">${q.q}</p>
+    <div class="options">${optsHtml}</div>
+    <div class="explanation" id="exp_${i}">
+      <p>${q.exp}</p>
+      <div style="margin-top:0.5rem;">${kwHtml}</div>
+    </div>
+  </div>`;
+}
+
+function choose(qIdx, optIdx) {
+  if (answered[qIdx]) return;
+  answered[qIdx] = true;
+  const q = currentQuestions[qIdx];
+  const isCorrect = optIdx === q.ans;
+  if (isCorrect) { score++; }
+  else { wrongIds.push(qIdx); }
+
+  for (let i = 0; i < q.opts.length; i++) {
+    const btn = document.getElementById(`opt_${qIdx}_${i}`);
+    btn.disabled = true;
+    if (i === q.ans) btn.classList.add(isCorrect && i === optIdx ? 'correct' : 'reveal');
+    if (!isCorrect && i === optIdx) btn.classList.add('wrong');
+  }
+  document.getElementById(`exp_${qIdx}`).classList.add('show');
+  updateProgress();
+
+  if (answered.every(Boolean)) {
+    setTimeout(showResult, 600);
+  }
+}
+
+function updateProgress() {
+  const done = answered.filter(Boolean).length;
+  const total = currentQuestions.length;
+  document.getElementById('pbar').style.width = (done/total*100)+'%';
+  document.getElementById('plabel').textContent = `${done} / ${total} 완료`;
+}
+
+function showResult() {
+  const total = currentQuestions.length;
+  const pct = Math.round(score/total*100);
+  document.getElementById('scoreNum').textContent = score;
+  document.getElementById('scoreDenom').textContent = `/ ${total}`;
+  const titles = ['다시 도전해 보세요', '기초를 다져봅시다', '조금 더 공부가 필요해요', '잘 이해하고 있어요', '거의 완벽해요', '만점! 완벽합니다'];
+  const msgs = [
+    '모범답안의 키워드를 다시 정리해 보세요.',
+    '필수 키워드 표를 먼저 암기해 보세요.',
+    '틀린 문제의 해설을 꼼꼼히 읽어보세요.',
+    '오답 문제를 한 번 더 풀어보면 완성됩니다.',
+    '핵심 키워드를 시험장에서도 떠올릴 수 있을 거예요.',
+    '이 주제는 완벽하게 정복했습니다!'
+  ];
+  const idx = Math.min(Math.floor(pct/20), 5);
+  document.getElementById('resultTitle').textContent = titles[idx];
+  document.getElementById('resultMsg').textContent = msgs[idx];
+  document.getElementById('resultPanel').className = 'result-panel show';
+  document.getElementById('resultPanel').scrollIntoView({behavior:'smooth'});
+}
+
+function retryWrong() {
+  if (wrongIds.length === 0) { alert('모든 문제를 맞혔습니다!'); return; }
+  const wrongQs = wrongIds.map(i => currentQuestions[i]);
+  init(wrongQs, true);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function restartAll() {
+  init(ALL_QUESTIONS, false);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+init(ALL_QUESTIONS);
+</script>
+</body>
+</html>

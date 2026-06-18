@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>흥선대원군 통치 재정비 — 점검 퀴즈</title>
+<style>
+  :root {
+    --bg: #f7f6f3;
+    --card: #ffffff;
+    --ink: #2b2b2b;
+    --muted: #6b6b6b;
+    --line: #e2e0db;
+    --accent: #3a6ea5;
+    --accent-soft: #eaf1f8;
+    --correct: #2e7d56;
+    --correct-soft: #e8f5ee;
+    --wrong: #c0392b;
+    --wrong-soft: #fae9e7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    padding: 24px 16px 60px;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  header { margin-bottom: 20px; }
+  h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+
+  .bar-track { height: 6px; background: var(--line); border-radius: 99px; margin: 18px 0 6px; overflow: hidden; }
+  .bar-fill { height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width 0.3s ease; }
+  .meta { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--muted); }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 24px 22px;
+    margin-top: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .tag {
+    display: inline-block; font-size: 0.72rem; font-weight: 600;
+    color: var(--accent); background: var(--accent-soft);
+    padding: 3px 10px; border-radius: 99px; margin-bottom: 12px;
+  }
+  .q { font-size: 1.08rem; font-weight: 600; line-height: 1.5; margin-bottom: 18px; }
+
+  .opt {
+    display: flex; align-items: flex-start; gap: 10px;
+    border: 1.5px solid var(--line); border-radius: 10px;
+    padding: 13px 15px; margin-bottom: 10px; cursor: pointer;
+    transition: all 0.15s ease; font-size: 0.98rem;
+  }
+  .opt:hover { border-color: var(--accent); background: #fafbfc; }
+  .opt.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .opt.correct { border-color: var(--correct); background: var(--correct-soft); }
+  .opt.wrong { border-color: var(--wrong); background: var(--wrong-soft); }
+  .opt.disabled { cursor: default; }
+  .opt.disabled:hover { background: var(--card); border-color: var(--line); }
+  .opt.disabled.selected:hover { background: var(--accent-soft); border-color: var(--accent); }
+  .opt.disabled.correct:hover { background: var(--correct-soft); border-color: var(--correct); }
+  .opt.disabled.wrong:hover { background: var(--wrong-soft); border-color: var(--wrong); }
+  .num {
+    flex: 0 0 24px; height: 24px; border-radius: 6px;
+    background: var(--bg); color: var(--muted);
+    font-size: 0.82rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .opt.correct .num { background: var(--correct); color: #fff; }
+  .opt.wrong .num { background: var(--wrong); color: #fff; }
+
+  .explain {
+    margin-top: 16px; border-left: 3px solid var(--accent);
+    background: #f9fafb; border-radius: 0 8px 8px 0;
+    padding: 14px 16px; font-size: 0.92rem; display: none;
+  }
+  .explain.show { display: block; }
+  .explain .verdict { font-weight: 700; margin-bottom: 6px; }
+  .explain .verdict.ok { color: var(--correct); }
+  .explain .verdict.no { color: var(--wrong); }
+  .explain .kw { color: var(--muted); font-size: 0.85rem; margin-top: 8px; }
+  .explain .kw b { color: var(--ink); }
+
+  .btn {
+    display: inline-block; border: none; border-radius: 10px;
+    padding: 12px 22px; font-size: 0.96rem; font-weight: 600;
+    cursor: pointer; font-family: inherit; transition: opacity 0.15s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:disabled { background: var(--line); color: #aaa; cursor: default; }
+  .btn-ghost { background: var(--bg); color: var(--ink); border: 1.5px solid var(--line); }
+  .btn:hover:not(:disabled) { opacity: 0.88; }
+  .actions { margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .score-big { font-size: 2.6rem; font-weight: 800; color: var(--accent); }
+  .score-sub { color: var(--muted); margin-bottom: 4px; }
+  .review-item { border-top: 1px solid var(--line); padding: 13px 0; font-size: 0.92rem; }
+  .review-item:first-of-type { border-top: none; }
+  .review-item .ri-q { font-weight: 600; }
+  .review-item .ri-tag { font-size: 0.78rem; padding: 2px 8px; border-radius: 99px; margin-left: 6px; }
+  .ri-tag.ok { color: var(--correct); background: var(--correct-soft); }
+  .ri-tag.no { color: var(--wrong); background: var(--wrong-soft); }
+  .review-item .ri-detail { color: var(--muted); margin-top: 4px; font-size: 0.86rem; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>흥선대원군 통치 재정비 — 점검 퀴즈</h1>
+    <div class="sub">실전 모범답안 기반 · 핵심 득점 키워드 15문항</div>
+  </header>
+
+  <div class="bar-track"><div class="bar-fill" id="bar"></div></div>
+  <div class="meta"><span id="counter">1 / 15</span><span id="modeLabel"></span></div>
+
+  <div id="quizView">
+    <div class="card">
+      <span class="tag" id="qtag">서론</span>
+      <div class="q" id="qtext"></div>
+      <div id="opts"></div>
+      <div class="explain" id="explain">
+        <div class="verdict" id="verdict"></div>
+        <div id="exptext"></div>
+        <div class="kw" id="kwtext"></div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="checkBtn" disabled>정답 확인</button>
+        <button class="btn btn-primary hidden" id="nextBtn">다음 →</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="resultView" class="hidden">
+    <div class="card">
+      <div class="score-sub">점수</div>
+      <div class="score-big"><span id="scoreNum">0</span> / <span id="scoreTot">15</span></div>
+      <div class="score-sub" id="scoreMsg"></div>
+      <div class="actions">
+        <button class="btn btn-primary hidden" id="retryWrongBtn">오답만 다시 풀기</button>
+        <button class="btn btn-ghost" id="retryAllBtn">전체 다시 풀기</button>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-weight:700; margin-bottom:6px;">문항별 결과</div>
+      <div id="reviewList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  { tag:"서론", q:"흥선대원군이 정국의 주도권을 장악하게 된 직접적 계기는?",
+    options:["고종 즉위","순조 즉위","임오군란","갑신정변"],
+    answer:0, exp:"흥선대원군은 어린 고종이 즉위하면서 국왕의 부친으로서 정국을 주도하였다.", kw:"고종 즉위" },
+  { tag:"통치 재정비", q:"세도정치기에 최고 정치 기구처럼 운영되며 왕권을 무력화했고, 대원군이 축소·폐지한 기구는?",
+    options:["비변사","의정부","삼군부","승정원"],
+    answer:0, exp:"비변사는 본래 국방 기구였으나 세도기에 최고 정치 기구로 변질되었고, 대원군이 그 기능을 축소·폐지했다.", kw:"비변사 폐지" },
+  { tag:"통치 재정비", q:"대원군이 정치·군사 기능을 분리하기 위해 부활시킨 두 기구의 짝은?",
+    options:["의정부 - 삼군부","비변사 - 도총부","승정원 - 훈련도감","6조 - 5군영"],
+    answer:0, exp:"정무는 의정부, 군무는 삼군부가 맡도록 부활시켜 정치와 군사를 분리했다.", kw:"의정부·삼군부" },
+  { tag:"통치 재정비", q:"대원군이 유교적 법치 체제를 명문화하기 위해 편찬한 법전은?",
+    options:["경국대전","속대전","대전통편","대전회통"],
+    answer:3, exp:"대원군은 대전회통을 편찬해 법치를 명문화했다. 앞의 세 법전은 그 이전 시기의 것이다.", kw:"대전회통" },
+  { tag:"통치 재정비", q:"양반에게도 군포를 징수해 군정의 문란을 시정하고 민생을 안정시킨 제도는?",
+    options:["균역법","호포제","대동법","사창제"],
+    answer:1, exp:"호포제는 양반에게도 군포(호포)를 부과한 제도로, 군정 폐단 시정과 민생 안정을 노렸다.", kw:"호포제" },
+  { tag:"서원 철폐", q:"서원이 누린 특권으로, 국가 재정을 고갈시킨 원인이 된 것은?",
+    options:["면세·면역","공명첩","납속책","과전 지급"],
+    answer:0, exp:"서원은 면세·면역 특권을 누리며 국가 재정을 고갈시켰다.", kw:"면세·면역" },
+  { tag:"서원 철폐", q:"서원이 지방 농민을 수탈하는 데 동원한 수단으로, 답안에 들어가야 할 용어는?",
+    options:["묵패","호패","공명첩","마패"],
+    answer:0, exp:"서원은 묵패를 이용해 농민에게 금품·노동을 강요하며 수탈했다.", kw:"묵패" },
+  { tag:"서원 철폐", q:"대원군이 전국 서원을 철폐하면서 존치한 서원의 수는?",
+    options:["27개소","37개소","47개소","57개소"],
+    answer:2, exp:"사액서원을 포함한 전국 서원을 철폐하고 47개소만 남겼다.", kw:"47개소 존치" },
+  { tag:"서원 철폐", q:'"백성에게 해가 되면 공자가 살아 돌아와도 용서치 않겠다"는 발언이 담고 있는 명분은?',
+    options:["국가 공공성","위정척사","사대교린","경세치용"],
+    answer:0, exp:"이 발언은 사림의 사적 의리보다 국가의 공적 질서(국가 공공성)가 우위에 있음을 명분화한 것이다.", kw:"국가 공공성" },
+  { tag:"통상 수교 거부", q:"1866년 프랑스 함대가 강화도를 침략한 병인양요의 구실이 된 사건은?",
+    options:["병인박해","제너럴 셔먼호 사건","오페르트 도굴 사건","운요호 사건"],
+    answer:0, exp:"병인양요는 1866년 천주교도 탄압인 병인박해를 구실로 프랑스가 강화도를 침략한 사건이다.", kw:"병인박해 → 병인양요" },
+  { tag:"통상 수교 거부", q:"병인양요 당시 조선이 격퇴전을 벌인 장소로 옳은 것은?",
+    options:["문수산성·정족산성","광성보·초지진","행주산성·남한산성","진주성·동래성"],
+    answer:0, exp:"병인양요에서 조선군은 문수산성·정족산성에서 프랑스군을 격퇴했다.", kw:"문수산성·정족산성" },
+  { tag:"통상 수교 거부", q:"병인양요 때 프랑스군에게 약탈당한 조선의 문화재는?",
+    options:["외규장각 도서","팔만대장경","직지심체요절","조선왕조실록"],
+    answer:0, exp:"프랑스군은 강화도 외규장각 도서를 약탈해 갔다.", kw:"외규장각 약탈" },
+  { tag:"통상 수교 거부", q:"1871년 신미양요를 일으킨 미국 침공의 빌미가 된 사건은?",
+    options:["제너럴 셔먼호 사건","병인박해","운요호 사건","거문도 사건"],
+    answer:0, exp:"신미양요는 1866년 제너럴 셔먼호 사건을 빌미로 1871년 미국이 침공한 사건이다.", kw:"제너럴 셔먼호 → 신미양요" },
+  { tag:"통상 수교 거부", q:"신미양요에서 어재연 등이 결사 항전한 장소는?",
+    options:["광성보","정족산성","문수산성","수원 화성"],
+    answer:0, exp:"신미양요에서 어재연 등이 광성보에서 항전했다. 광성보는 함락됐으나 미국은 끝내 철수했다.", kw:"어재연·광성보" },
+  { tag:"통상 수교 거부", q:"두 양요 이후 정부가 통상 수교 거부 의지를 표명하며 전국에 세운 것은?",
+    options:["척화비","순수비","사대비","측우기"],
+    answer:0, exp:"정부는 양요를 승리로 인식해 전국에 척화비를 세우고 통상 수교 거부 정책을 강화했다.", kw:"척화비" }
+];
+
+let pool = QUESTIONS.map((_, i) => i);
+let idx = 0;
+let answeredThisQ = false;
+let results = {};
+let isWrongRound = false;
+
+const $ = id => document.getElementById(id);
+
+function startRound(indices, wrongMode) {
+  pool = indices.slice();
+  idx = 0;
+  results = {};
+  isWrongRound = wrongMode;
+  $("resultView").classList.add("hidden");
+  $("quizView").classList.remove("hidden");
+  $("modeLabel").textContent = wrongMode ? "오답 복습 모드" : "";
+  renderQuestion();
+}
+
+function renderQuestion() {
+  answeredThisQ = false;
+  const qi = pool[idx];
+  const Q = QUESTIONS[qi];
+  $("counter").textContent = (idx + 1) + " / " + pool.length;
+  $("bar").style.width = ((idx) / pool.length * 100) + "%";
+  $("qtag").textContent = Q.tag;
+  $("qtext").textContent = (qi + 1) + ". " + Q.q;
+
+  const optsBox = $("opts");
+  optsBox.innerHTML = "";
+  Q.options.forEach((text, i) => {
+    const div = document.createElement("div");
+    div.className = "opt";
+    div.innerHTML = '<span class="num">' + (i + 1) + '</span><span>' + text + '</span>';
+    div.onclick = () => selectOption(div, i);
+    optsBox.appendChild(div);
+  });
+
+  $("explain").classList.remove("show");
+  $("checkBtn").classList.remove("hidden");
+  $("checkBtn").disabled = true;
+  $("nextBtn").classList.add("hidden");
+  $("nextBtn").textContent = (idx === pool.length - 1) ? "결과 보기 →" : "다음 →";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+let picked = -1;
+function selectOption(el, i) {
+  if (answeredThisQ) return;
+  picked = i;
+  document.querySelectorAll(".opt").forEach(o => o.classList.remove("selected"));
+  el.classList.add("selected");
+  $("checkBtn").disabled = false;
+}
+
+$("checkBtn").onclick = () => {
+  if (picked < 0) return;
+  answeredThisQ = true;
+  const qi = pool[idx];
+  const Q = QUESTIONS[qi];
+  const correct = (picked === Q.answer);
+  results[qi] = { picked, correct };
+
+  const opts = document.querySelectorAll(".opt");
+  opts.forEach((o, i) => {
+    o.classList.add("disabled");
+    if (i === Q.answer) o.classList.add("correct");
+    else if (i === picked) o.classList.add("wrong");
+  });
+
+  const v = $("verdict");
+  if (correct) { v.textContent = "정답입니다 ✓"; v.className = "verdict ok"; }
+  else { v.textContent = "오답입니다 ✗  정답: " + (Q.answer + 1) + "번"; v.className = "verdict no"; }
+  $("exptext").textContent = Q.exp;
+  $("kwtext").innerHTML = "답안 필수 키워드 → <b>" + Q.kw + "</b>";
+  $("explain").classList.add("show");
+
+  $("checkBtn").classList.add("hidden");
+  $("nextBtn").classList.remove("hidden");
+  picked = -1;
+};
+
+$("nextBtn").onclick = () => {
+  if (idx < pool.length - 1) { idx++; renderQuestion(); }
+  else showResult();
+};
+
+function showResult() {
+  $("bar").style.width = "100%";
+  $("quizView").classList.add("hidden");
+  $("resultView").classList.remove("hidden");
+
+  const answeredIdx = pool.slice();
+  const correctCount = answeredIdx.filter(qi => results[qi] && results[qi].correct).length;
+  const total = pool.length;
+  $("scoreNum").textContent = correctCount;
+  $("scoreTot").textContent = total;
+
+  const wrongIdx = answeredIdx.filter(qi => results[qi] && !results[qi].correct);
+  let msg;
+  if (wrongIdx.length === 0) msg = "전부 맞혔어요. 놓친 키워드가 없습니다 👍";
+  else msg = "틀린 " + wrongIdx.length + "문항의 키워드를 다시 확인하세요.";
+  $("scoreMsg").textContent = msg;
+
+  const retryWrong = $("retryWrongBtn");
+  if (wrongIdx.length > 0) {
+    retryWrong.classList.remove("hidden");
+    retryWrong.onclick = () => startRound(wrongIdx, true);
+  } else {
+    retryWrong.classList.add("hidden");
+  }
+  $("retryAllBtn").onclick = () => startRound(QUESTIONS.map((_, i) => i), false);
+
+  const list = $("reviewList");
+  list.innerHTML = "";
+  answeredIdx.forEach(qi => {
+    const Q = QUESTIONS[qi];
+    const r = results[qi];
+    const ok = r && r.correct;
+    const item = document.createElement("div");
+    item.className = "review-item";
+    item.innerHTML =
+      '<div class="ri-q">' + (qi + 1) + '. ' + Q.q +
+      '<span class="ri-tag ' + (ok ? "ok" : "no") + '">' + (ok ? "정답" : "오답") + '</span></div>' +
+      '<div class="ri-detail">정답: ' + (Q.answer + 1) + '번 · 키워드 <b>' + Q.kw + '</b></div>';
+    list.appendChild(item);
+  });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+renderQuestion();
+</script>
+</body>
+</html>

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>대한민국 임시정부 퀴즈</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d1117;
+    --card: #161b22;
+    --border: #30363d;
+    --blue: #388bfd;
+    --blue-light: #79c0ff;
+    --green: #3fb950;
+    --red: #f85149;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --muted2: #6e7681;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans KR', -apple-system, sans-serif;
+    min-height: 100vh;
+    padding: 32px 16px;
+    line-height: 1.5;
+  }
+  .container { max-width: 720px; margin: 0 auto; }
+
+  /* Header */
+  .header { margin-bottom: 18px; }
+  .header .label { font-size: 11px; color: var(--muted); letter-spacing: 1.5px; margin-bottom: 6px; }
+  .header h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.3px; }
+  .header .sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; margin-bottom: 18px; border-bottom: 1px solid var(--border); }
+  .tab-btn {
+    padding: 10px 16px; background: transparent; border: none;
+    border-bottom: 2px solid transparent; color: var(--muted);
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    font-family: inherit; margin-bottom: -1px;
+  }
+  .tab-btn.active { border-bottom-color: var(--blue); color: var(--text); font-weight: 700; }
+
+  /* Progress */
+  .progress-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px; color: var(--muted); }
+  .progress-bar { height: 4px; background: var(--card); border-radius: 2px; margin-bottom: 22px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--blue); transition: width 0.3s ease; width: 0; }
+
+  /* Question card */
+  .q-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px 22px; margin-bottom: 14px;
+  }
+  .q-label { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: 1.2px; margin-bottom: 8px; }
+  .q-text { font-size: 15px; font-weight: 600; line-height: 1.65; }
+
+  /* Options */
+  .options { margin-bottom: 14px; }
+  .option {
+    width: 100%; text-align: left;
+    padding: 13px 16px; margin-bottom: 8px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text);
+    font-size: 14px; line-height: 1.5; cursor: pointer;
+    font-family: inherit; transition: all 0.15s ease;
+    display: block; position: relative;
+  }
+  .option:hover:not(:disabled) { border-color: var(--blue); }
+  .option:disabled { cursor: default; }
+  .option .letter { display: inline-block; min-width: 20px; color: var(--muted2); margin-right: 8px; font-weight: 700; }
+  .option .mark { float: right; }
+  .option.selected { background: #0d1f3d; border-color: var(--blue); color: var(--blue-light); }
+  .option.correct { background: #0d2818; border-color: var(--green); color: var(--green); }
+  .option.wrong { background: #2d1115; border-color: var(--red); color: var(--red); }
+
+  /* Explanation */
+  .explanation {
+    background: #111a24; border: 1px solid #1e3a5f;
+    border-radius: 8px; padding: 14px 16px; margin-bottom: 14px;
+    font-size: 13px; line-height: 1.75; color: #8bb8d4;
+  }
+  .explanation .title { color: var(--blue-light); font-weight: 700; margin-bottom: 6px; font-size: 12px; }
+
+  /* Buttons */
+  .btn-row { display: flex; gap: 8px; }
+  .btn {
+    flex: 1; padding: 12px;
+    border-radius: 6px; font-size: 14px;
+    cursor: pointer; font-family: inherit;
+    border: 1px solid transparent;
+  }
+  .btn-primary { background: var(--blue); color: #fff; border-color: var(--blue); font-weight: 700; }
+  .btn-primary:disabled { background: var(--card); color: var(--muted2); border-color: var(--border); cursor: not-allowed; }
+  .btn-secondary { background: transparent; color: var(--blue-light); border-color: var(--border); }
+
+  /* Final results */
+  .result-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 28px 24px; text-align: center;
+  }
+  .result-label { font-size: 12px; color: var(--muted); letter-spacing: 1.5px; margin-bottom: 8px; }
+  .result-score { font-size: 48px; font-weight: 800; color: var(--blue-light); margin-bottom: 4px; }
+  .result-score .total { font-size: 24px; color: var(--muted); }
+  .result-grade { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
+  .result-list { margin-bottom: 24px; max-height: 280px; overflow-y: auto; text-align: left; }
+  .result-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .result-row .num { color: var(--muted); font-size: 12px; min-width: 32px; }
+  .result-row .q-snippet { flex: 1; color: var(--text); font-size: 12px; }
+
+  /* Keywords */
+  .kw-header {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px 22px; margin-bottom: 14px;
+  }
+  .kw-header h3 { color: var(--blue-light); font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .kw-header p { color: var(--muted); font-size: 13px; }
+  .kw-item {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 16px; margin-bottom: 8px;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .kw-num {
+    min-width: 24px; height: 24px; background: var(--blue);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0; margin-top: 1px;
+  }
+  .kw-term { color: var(--blue-light); font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .kw-desc { color: var(--muted); font-size: 13px; line-height: 1.7; }
+  .kw-eval {
+    background: #111a24; border: 1px solid #1e3a5f;
+    border-radius: 8px; padding: 16px 18px; margin-top: 12px;
+  }
+  .kw-eval .title { color: var(--blue); font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+  .kw-eval ul { color: #8bb8d4; font-size: 13px; line-height: 1.9; padding-left: 18px; }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="label">KOREAN HISTORY · 한국사</div>
+    <h1>대한민국 임시정부</h1>
+    <div class="sub">수립 배경 · 조직 체계 · 독립운동 노선의 변화 (1919~1945)</div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="0">📝 퀴즈</button>
+    <button class="tab-btn" data-tab="1">🔑 핵심키워드</button>
+  </div>
+
+  <!-- QUIZ TAB -->
+  <div id="quiz-tab">
+    <div id="quiz-view">
+      <div class="progress-row">
+        <span id="prog-text">Question 1 / 25</span>
+        <span id="score-text">점수 0 / 25</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-fill"></div></div>
+
+      <div class="q-card">
+        <div class="q-label" id="q-label">Q1</div>
+        <div class="q-text" id="q-text"></div>
+      </div>
+
+      <div class="options" id="options"></div>
+
+      <div class="explanation hidden" id="explanation">
+        <div class="title">💡 해설</div>
+        <div id="explanation-text"></div>
+      </div>
+
+      <div class="btn-row" id="btn-row"></div>
+    </div>
+
+    <div id="result-view" class="hidden">
+      <div class="result-card">
+        <div class="result-label">FINAL RESULT</div>
+        <div class="result-score"><span id="final-score">0</span> <span class="total">/ <span id="final-total">25</span></span></div>
+        <div class="result-grade" id="final-grade"></div>
+        <div class="result-list" id="result-list"></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="restart-btn">다시 풀기</button>
+          <button class="btn btn-secondary" id="goto-kw-btn">핵심키워드 보기 →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KEYWORDS TAB -->
+  <div id="kw-tab" class="hidden">
+    <div class="kw-header">
+      <h3>🔑 핵심 키워드 정리</h3>
+      <p>대한민국 임시정부 (1919~1945) 주요 개념 25선</p>
+    </div>
+    <div id="kw-list"></div>
+    <div class="kw-eval">
+      <div class="title">📌 평가 포인트</div>
+      <ul>
+        <li><b>시대적 의의</b>: 한국 최초의 민주 공화제 정부 / 27년간 독립운동의 구심점</li>
+        <li><b>노선 변화</b>: 무장투쟁(1920s) → 의열투쟁(1930s) → 정규군 항전(1940s)</li>
+        <li><b>외교 성과</b>: 윤봉길 의거 → 중국 국민당 지원 / 대일 선전포고 / OSS 협력</li>
+        <li><b>한계</b>: 외교 활동 위주 / 자유시 참변·일본의 갑작스러운 항복으로 진공 작전 무산</li>
+        <li><b>역사적 계승</b>: 현행 대한민국 헌법 전문에 "임시정부 법통 계승" 명시</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const questions = [
+  { q: "대한민국 임시정부 수립의 직접적인 배경이 된 사건은?", options: ["갑오개혁", "3·1운동", "동학농민운동", "을사조약 체결"], answer: 1, explanation: "1919년 3·1운동은 전 민족적 독립 의지를 드러냈으며, 독립운동을 체계적으로 지도할 통합 기구의 필요성을 일깨워 임시정부 수립의 직접적인 계기가 되었습니다." },
+  { q: "1919년 4월 대한민국 임시정부가 수립된 도시는?", options: ["베이징", "상하이", "충칭", "옌안"], answer: 1, explanation: "여러 임시정부가 통합되어 1919년 4월 중국 상하이에서 대한민국 임시정부가 수립되었습니다. 상하이는 외국 조계지가 있어 일본의 영향력이 상대적으로 약했던 곳입니다." },
+  { q: "대한민국 임시정부에 통합된 국내외 임시정부가 아닌 것은?", options: ["한성정부", "대한국민의회(연해주)", "상하이 임시정부", "만주국 정부"], answer: 3, explanation: "국내의 한성정부, 연해주의 대한국민의회, 그리고 상하이의 임시정부가 통합되어 대한민국 임시정부가 수립되었습니다. 만주국은 1932년 일제가 세운 괴뢰국으로 무관합니다." },
+  { q: "대한민국 임시정부가 채택한 정치 체제는?", options: ["입헌군주제", "민주 공화제", "절대왕정", "공산주의 체제"], answer: 1, explanation: "임시정부는 전제군주제를 부정하고 한국 역사상 최초로 민주 공화제를 채택하였습니다. 이는 주권이 국민에게 있음을 선언한 획기적인 의미를 갖습니다." },
+  { q: "임시정부의 3권 분립 체제에서 입법부에 해당하는 기관은?", options: ["임시의정원", "국무원", "법원", "독립협회"], answer: 0, explanation: "임시정부는 입법부 임시의정원, 행정부 국무원, 사법부 법원으로 구성된 3권 분립 체제를 마련하였습니다. 임시의정원은 국회의 역할을 수행하였습니다." },
+  { q: "임시정부가 국내와의 비밀 연락을 위해 운영한 행정 조직은?", options: ["통감부", "연통제", "도평의회", "통신원"], answer: 1, explanation: "연통제(聯通制)는 임시정부가 국내 각 지방에 설치한 비밀 행정 조직으로, 임시정부의 명령을 전달하고 국내 정세를 보고하는 역할을 하였습니다." },
+  { q: "군자금 모집과 정보 수집을 담당한 임시정부 조직은?", options: ["교통국", "의열단", "한인애국단", "신민회"], answer: 0, explanation: "교통국(交通局)은 임시정부 산하 조직으로 군자금 모집, 정보 수집, 독립선언문 배포 등의 임무를 수행하였습니다. 연통제와 함께 임정의 핵심 비밀 조직이었습니다." },
+  { q: "임시정부가 발행한 기관지의 이름은?", options: ["한성순보", "대한매일신보", "독립신문", "황성신문"], answer: 2, explanation: "임시정부는 기관지 『독립신문』을 발행하여 독립 의지를 선전하고 국내외 동포의 결집을 도모하였습니다. 한성순보·대한매일신보·황성신문은 모두 임정 이전 시기의 신문입니다." },
+  { q: "1920년 6월 봉오동 전투에서 일본군을 격파한 인물과 부대는?", options: ["김좌진 - 북로군정서", "홍범도 - 대한독립군", "이회영 - 신민회", "지청천 - 한국독립군"], answer: 1, explanation: "1920년 6월 홍범도가 이끄는 대한독립군이 두만강 너머 봉오동에서 일본군을 대파하였습니다. 이는 만주 무장 독립전쟁의 첫 대규모 승전이었습니다." },
+  { q: "1920년 10월 청산리 대첩을 이끈 인물과 부대는?", options: ["홍범도 - 대한독립군", "김좌진 - 북로군정서", "양세봉 - 조선혁명군", "지청천 - 한국독립군"], answer: 1, explanation: "김좌진이 이끄는 북로군정서가 청산리 일대에서 6일간 10여 차례 전투를 벌여 일본군에게 대승을 거두었습니다. 청산리 대첩은 독립전쟁 사상 최대의 승전으로 평가됩니다." },
+  { q: "1920년 일제의 보복으로 만주의 한국인 민간인이 대규모 학살당한 사건은?", options: ["간도참변", "자유시 참변", "105인 사건", "제암리 학살"], answer: 0, explanation: "봉오동·청산리 전투 이후 일제는 보복으로 간도참변(경신참변, 1920)을 일으켜 만주의 한국인 민간인을 대규모로 학살하였습니다." },
+  { q: "1921년 러시아에서 독립군이 소련 적군에 의해 강제 무장 해제당한 사건은?", options: ["간도참변", "자유시 참변", "만보산 사건", "운요호 사건"], answer: 1, explanation: "간도참변 후 독립군이 러시아 자유시(알렉세예프스크)로 이동하였으나, 1921년 소련 적군에 의해 강제 무장 해제당하는 자유시 참변이 일어났습니다. 이로써 무장 독립운동은 큰 타격을 입었습니다." },
+  { q: "1920년대 후반 임시정부 침체기에 의정원에 의해 탄핵된 초대 대통령은?", options: ["김구", "이승만", "이동휘", "안창호"], answer: 1, explanation: "임시정부는 재정난과 내부 갈등으로 침체를 겪었고, 1925년 위임통치 청원 등 외교 노선에 대한 비판으로 초대 대통령 이승만이 탄핵되었습니다." },
+  { q: "이승만 탄핵 이후 임시정부가 채택한 정부 형태는?", options: ["대통령 중심제 강화", "국무령 중심 체제", "주석제", "의원내각제"], answer: 1, explanation: "이승만 탄핵 후 임시정부는 대통령제를 폐지하고 국무령 중심 체제로 개편하였으며, 김구를 중심으로 독립운동 세력을 재통합하고자 하였습니다." },
+  { q: "1930년대 의열 투쟁과 민족 연합 운동이 활발해지는 배경이 된 사건은?", options: ["청일전쟁", "만주사변(1931)", "러일전쟁", "을사조약"], answer: 1, explanation: "1931년 만주사변 이후 일제의 침략이 강화되자, 이에 대응하여 의열 투쟁과 한·중 민족 연합 운동이 활발해졌습니다." },
+  { q: "1919년 의열단을 창설한 인물은?", options: ["김구", "김원봉", "김좌진", "김두봉"], answer: 1, explanation: "의열단은 1919년 김원봉이 만주 길림에서 창설한 의열 투쟁 단체로, 일제 기관 폭파와 친일파 암살 등 직접 투쟁을 전개하였습니다." },
+  { q: "의열단의 이념적 기반이 된 「조선혁명선언」을 작성한 인물은?", options: ["박은식", "신채호", "백범 김구", "안창호"], answer: 1, explanation: "신채호는 1923년 「조선혁명선언」을 작성하여 의열단의 이념적 기반을 마련하였습니다. 외교론·문화주의·자치론을 모두 비판하고 민중 직접 혁명을 강조하였습니다." },
+  { q: "의열단의 단원으로 활동하지 않은 인물은?", options: ["박재혁(부산경찰서 폭탄 투척)", "김상옥(종로경찰서 폭탄 투척)", "나석주(동양척식주식회사 의거)", "윤봉길(훙커우공원 의거)"], answer: 3, explanation: "박재혁·김상옥·나석주는 모두 의열단원이었으나, 윤봉길은 김구가 조직한 한인애국단 단원으로 1932년 훙커우공원 의거를 일으켰습니다." },
+  { q: "1938년 의열단이 발전하여 결성된 무장 조직은?", options: ["한국광복군", "조선의용대", "한국독립군", "조선혁명군"], answer: 1, explanation: "의열단은 1930년대에 황포군관학교 군사 교육과 민족혁명당 결성을 거쳐 1938년 중국 한커우에서 조선의용대로 발전하였습니다. 이는 중국 관내 최초의 한국인 무장 부대입니다." },
+  { q: "김구가 1931년경 임시정부 산하에 조직한 의열 단체는?", options: ["의열단", "한인애국단", "흥사단", "신한혁명당"], answer: 1, explanation: "김구는 1931년경 침체된 임시정부에 활력을 불어넣기 위해 한인애국단을 조직하였습니다. 이봉창·윤봉길 의거는 모두 한인애국단의 활동이었습니다." },
+  { q: "1932년 도쿄에서 일왕을 향해 폭탄을 던진 한인애국단원은?", options: ["윤봉길", "이봉창", "안중근", "강우규"], answer: 1, explanation: "이봉창은 1932년 1월 도쿄 사쿠라다몬에서 일왕 히로히토에게 폭탄을 던졌으나 명중에는 실패하였습니다. 그러나 이 의거는 일본 사회에 큰 충격을 주었습니다." },
+  { q: "1932년 상하이 훙커우공원에서 일본군 수뇌부에 폭탄을 던진 인물은?", options: ["이봉창", "윤봉길", "김상옥", "나석주"], answer: 1, explanation: "윤봉길은 1932년 4월 29일 일왕 생일 축하식이 열린 상하이 훙커우공원에서 폭탄을 던져 일본군 사령관 시라카와 등을 처단하였습니다." },
+  { q: "윤봉길 의거가 임시정부에 가져온 가장 중요한 결과는?", options: ["일본의 항복 선언", "중국 국민당 정부의 적극적 지원", "미국의 즉시 참전", "소련의 군사 원조"], answer: 1, explanation: "윤봉길 의거는 장제스의 중국 국민당 정부가 임시정부를 적극 지원하는 결정적 계기가 되었으며, 침체되었던 임시정부 활동이 활기를 되찾게 하였습니다." },
+  { q: "1940년 임시정부가 한국광복군을 창설한 중국의 도시는?", options: ["상하이", "난징", "충칭", "광저우"], answer: 2, explanation: "임시정부는 중일전쟁 중 일본군에 밀려 여러 차례 이동한 끝에 충칭에 정착하였고, 1940년 충칭에서 한국광복군을 창설하며 좌우 세력의 연합을 추진하였습니다." },
+  { q: "한국광복군이 미국 전략정보국(OSS)과 협력하여 준비한 작전은?", options: ["만주 회복 작전", "국내 진공(정진군) 작전", "동남아 점령 작전", "베를린 진공 작전"], answer: 1, explanation: "한국광복군은 1941년 대일 선전포고 후 미국 OSS와 협력하여 국내 진공(정진군) 작전을 준비하였으나, 1945년 8월 일본의 갑작스러운 항복으로 실행되지 못하였습니다." }
+];
+
+const keywords = [
+  { term: "3·1운동 (1919)", desc: "임시정부 수립의 직접적 배경 / 통합 지도 기구 필요성 대두" },
+  { term: "상하이 임시정부 (1919.4)", desc: "한성정부 + 대한국민의회 + 상하이 임정 통합 / 외국 조계지 위치" },
+  { term: "민주 공화제", desc: "한국 역사상 최초의 공화국 정부 / 주권재민 선언" },
+  { term: "3권 분립", desc: "임시의정원(입법) · 국무원(행정) · 법원(사법)" },
+  { term: "연통제", desc: "국내 비밀 행정 조직 / 임정 명령 전달, 국내 정세 보고" },
+  { term: "교통국", desc: "군자금 모집 · 정보 수집 · 독립선언문 배포" },
+  { term: "『독립신문』", desc: "임시정부 기관지 / 독립 사상 선전, 동포 결집" },
+  { term: "봉오동 전투 (1920.6)", desc: "홍범도의 대한독립군 / 일본군 격파, 무장 독립전쟁 첫 대승" },
+  { term: "청산리 대첩 (1920.10)", desc: "김좌진의 북로군정서 / 6일간 10여 차례 전투, 독립전쟁 사상 최대 승전" },
+  { term: "간도참변 (1920)", desc: "일제의 보복 / 만주 한인 민간인 대규모 학살" },
+  { term: "자유시 참변 (1921)", desc: "소련 적군이 독립군 무장 해제 / 무장 독립운동 큰 타격" },
+  { term: "이승만 탄핵", desc: "위임통치 청원 등 외교 노선 비판 → 1925년 의정원 탄핵" },
+  { term: "국무령 중심 체제", desc: "이승만 탄핵 후 정부 형태 개편 / 김구 중심 재정비" },
+  { term: "만주사변 (1931)", desc: "1930년대 의열 투쟁 · 민족 연합 운동 활발화의 배경" },
+  { term: "의열단 (1919)", desc: "김원봉 창설 / 폭탄 투척 · 친일파 처단 등 직접 투쟁" },
+  { term: "「조선혁명선언」", desc: "신채호 작성(1923) / 의열단의 이념적 기반, 민중 직접 혁명 강조" },
+  { term: "조선의용대 (1938)", desc: "의열단의 발전 / 중국 관내 최초의 한국인 무장 부대" },
+  { term: "한인애국단", desc: "김구가 1931년경 조직 / 이봉창 · 윤봉길 의거 주도" },
+  { term: "이봉창 의거 (1932.1)", desc: "도쿄 사쿠라다몬에서 일왕에 폭탄 투척" },
+  { term: "윤봉길 의거 (1932.4)", desc: "상하이 훙커우공원 / 일본군 사령관 시라카와 등 처단" },
+  { term: "국민당 지원", desc: "윤봉길 의거의 결과 / 임정 활동 활기 회복" },
+  { term: "한국광복군 (1940)", desc: "충칭에서 창설 / 좌우 세력 연합 / 임시정부 정규군" },
+  { term: "대일 선전포고 (1941)", desc: "태평양전쟁 발발 후 일본 · 독일에 선전포고" },
+  { term: "국내 진공 작전", desc: "광복군 + 미국 OSS 협력 / 1945 일본 항복으로 무산" },
+  { term: "헌법 전문 계승", desc: "현행 헌법 \"임시정부 법통 계승\" 명시 / 대한민국 정통성의 법적 근거" }
+];
+
+// State
+let current = 0;
+let selected = null;
+let confirmed = false;
+let score = 0;
+let finished = false;
+let results = [];
+let showExplain = false;
+
+// DOM refs
+const $ = (id) => document.getElementById(id);
+
+function renderQuestion() {
+  const q = questions[current];
+  const total = questions.length;
+
+  $('prog-text').textContent = `Question ${current + 1} / ${total}`;
+  $('score-text').textContent = `점수 ${score} / ${total}`;
+  const progress = ((current + (confirmed ? 1 : 0)) / total) * 100;
+  $('prog-fill').style.width = progress + '%';
+
+  $('q-label').textContent = `Q${current + 1}`;
+  $('q-text').textContent = q.q;
+
+  // Options
+  const optsHtml = q.options.map((opt, idx) => {
+    let cls = 'option';
+    if (confirmed) {
+      if (idx === q.answer) cls += ' correct';
+      else if (idx === selected) cls += ' wrong';
+    } else if (selected === idx) {
+      cls += ' selected';
+    }
+    let mark = '';
+    if (confirmed && idx === q.answer) mark = '<span class="mark">✓</span>';
+    else if (confirmed && idx === selected && idx !== q.answer) mark = '<span class="mark">✗</span>';
+    return `<button class="${cls}" data-idx="${idx}" ${confirmed ? 'disabled' : ''}>
+      <span class="letter">${String.fromCharCode(65 + idx)}.</span>${opt}${mark}
+    </button>`;
+  }).join('');
+  $('options').innerHTML = optsHtml;
+
+  // Option click handlers
+  document.querySelectorAll('.option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (confirmed) return;
+      selected = parseInt(btn.dataset.idx);
+      renderQuestion();
+    });
+  });
+
+  // Explanation
+  if (confirmed && showExplain) {
+    $('explanation').classList.remove('hidden');
+    $('explanation-text').textContent = q.explanation;
+  } else {
+    $('explanation').classList.add('hidden');
+  }
+
+  // Buttons
+  let btnHtml = '';
+  if (!confirmed) {
+    btnHtml = `<button class="btn btn-primary" id="confirm-btn" ${selected === null ? 'disabled' : ''}>정답 확인</button>`;
+  } else {
+    btnHtml = `
+      <button class="btn btn-secondary" id="explain-btn">${showExplain ? '해설 닫기' : '해설 보기'}</button>
+      <button class="btn btn-primary" id="next-btn">${current + 1 >= total ? '결과 보기 →' : '다음 문제 →'}</button>
+    `;
+  }
+  $('btn-row').innerHTML = btnHtml;
+
+  if (!confirmed) {
+    $('confirm-btn').addEventListener('click', handleConfirm);
+  } else {
+    $('explain-btn').addEventListener('click', () => { showExplain = !showExplain; renderQuestion(); });
+    $('next-btn').addEventListener('click', handleNext);
+  }
+}
+
+function handleConfirm() {
+  if (selected === null) return;
+  const q = questions[current];
+  const ok = selected === q.answer;
+  if (ok) score++;
+  results.push({ ok, selected, correct: q.answer });
+  confirmed = true;
+  renderQuestion();
+}
+
+function handleNext() {
+  if (current + 1 >= questions.length) {
+    finished = true;
+    renderResults();
+  } else {
+    current++;
+    selected = null;
+    confirmed = false;
+    showExplain = false;
+    renderQuestion();
+  }
+}
+
+function renderResults() {
+  $('quiz-view').classList.add('hidden');
+  $('result-view').classList.remove('hidden');
+  $('final-score').textContent = score;
+  $('final-total').textContent = questions.length;
+  const grade = score >= 22 ? '최우수 🏆' : score >= 18 ? '우수 👏' : score >= 13 ? '양호 👍' : '복습 필요 📖';
+  $('final-grade').textContent = grade;
+  const listHtml = results.map((r, i) => `
+    <div class="result-row">
+      <span class="num">Q${i + 1}</span>
+      <span class="q-snippet">${questions[i].q.slice(0, 28)}…</span>
+      <span>${r.ok ? '✅' : '❌'}</span>
+    </div>
+  `).join('');
+  $('result-list').innerHTML = listHtml;
+}
+
+function handleRestart() {
+  current = 0; selected = null; confirmed = false; score = 0;
+  finished = false; results = []; showExplain = false;
+  $('result-view').classList.add('hidden');
+  $('quiz-view').classList.remove('hidden');
+  renderQuestion();
+}
+
+function renderKeywords() {
+  const html = keywords.map((kw, i) => `
+    <div class="kw-item">
+      <div class="kw-num">${i + 1}</div>
+      <div>
+        <div class="kw-term">${kw.term}</div>
+        <div class="kw-desc">${kw.desc}</div>
+      </div>
+    </div>
+  `).join('');
+  $('kw-list').innerHTML = html;
+}
+
+// Tab handlers
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(parseInt(btn.dataset.tab)));
+});
+
+function switchTab(idx) {
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.tab) === idx);
+  });
+  $('quiz-tab').classList.toggle('hidden', idx !== 0);
+  $('kw-tab').classList.toggle('hidden', idx !== 1);
+}
+
+$('restart-btn').addEventListener('click', handleRestart);
+$('goto-kw-btn').addEventListener('click', () => switchTab(1));
+
+// Init
+renderQuestion();
+renderKeywords();
+</script>
+</body>
+</html>

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>무신정권 권력기관 4지선다 퀴즈</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; background: #f5f4f0; color: #1a1a18; min-height: 100vh; padding: 2rem 1rem; }
+  .container { max-width: 720px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 2rem; }
+  header h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.4rem; }
+  header p { font-size: 0.875rem; color: #5f5e5a; }
+  .progress-bar-wrap { background: #d3d1c7; border-radius: 99px; height: 6px; margin-bottom: 0.5rem; }
+  .progress-bar { height: 6px; border-radius: 99px; background: #1D9E75; transition: width 0.4s; }
+  .progress-label { font-size: 0.8rem; color: #5f5e5a; text-align: right; margin-bottom: 1.5rem; }
+  .quiz-card { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 14px; padding: 1.75rem; margin-bottom: 1.25rem; }
+  .q-num { font-size: 0.75rem; font-weight: 600; color: #0F6E56; background: #E1F5EE; padding: 3px 10px; border-radius: 99px; display: inline-block; margin-bottom: 0.5rem; }
+  .q-topic { font-size: 0.7rem; color: #5f5e5a; margin-left: 6px; }
+  .q-text { font-size: 1rem; line-height: 1.7; font-weight: 500; margin-bottom: 1.25rem; margin-top: 0.5rem; }
+  .options { display: flex; flex-direction: column; gap: 0.6rem; }
+  .opt-btn { background: #fff; border: 0.5px solid #b4b2a9; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.9rem; line-height: 1.5; text-align: left; cursor: pointer; transition: all 0.15s; color: #1a1a18; }
+  .opt-btn:hover:not(:disabled) { background: #f1efe8; border-color: #888780; }
+  .opt-btn.correct { background: #E1F5EE; border-color: #1D9E75; color: #085041; }
+  .opt-btn.wrong { background: #FAECE7; border-color: #993C1D; color: #4A1B0C; }
+  .opt-btn.reveal { background: #E1F5EE; border-color: #1D9E75; color: #085041; }
+  .opt-btn:disabled { cursor: default; }
+  .explanation { margin-top: 1rem; padding: 0.875rem 1rem; background: #f1efe8; border-radius: 10px; font-size: 0.875rem; line-height: 1.7; color: #2c2c2a; display: none; }
+  .explanation.show { display: block; }
+  .explanation strong { color: #0F6E56; }
+  .result-panel { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 14px; padding: 2rem; text-align: center; display: none; }
+  .result-panel.show { display: block; }
+  .score-circle { width: 100px; height: 100px; border-radius: 50%; background: #E1F5EE; border: 3px solid #1D9E75; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+  .score-circle .num { font-size: 2rem; font-weight: 700; color: #0F6E56; line-height: 1; }
+  .score-circle .denom { font-size: 0.8rem; color: #1D9E75; }
+  .result-panel h2 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+  .result-panel p { font-size: 0.9rem; color: #5f5e5a; margin-bottom: 1.5rem; }
+  .btn-row { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 0.6rem 1.4rem; border-radius: 8px; font-size: 0.875rem; cursor: pointer; border: 0.5px solid #b4b2a9; background: #fff; color: #1a1a18; transition: background 0.15s; }
+  .btn:hover { background: #f1efe8; }
+  .btn.primary { background: #0F6E56; color: #fff; border-color: #0F6E56; }
+  .btn.primary:hover { background: #085041; }
+  .wrong-only-banner { background: #FAECE7; border: 0.5px solid #F0997B; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.875rem; color: #4A1B0C; margin-bottom: 1.25rem; display: none; }
+  .wrong-only-banner.show { display: block; }
+  .keyword-chip { display: inline-block; background: #E6F1FB; color: #0C447C; font-size: 0.75rem; padding: 2px 8px; border-radius: 99px; margin: 2px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>무신정권 권력기관 핵심 퀴즈</h1>
+    <p>문벌귀족 체제 비교 · 사적 권력기구 · 왕권과 관료제 영향 — 4지선다 12문항</p>
+  </header>
+
+  <div class="progress-bar-wrap"><div class="progress-bar" id="pbar" style="width:0%"></div></div>
+  <div class="progress-label" id="plabel">0 / 12 완료</div>
+
+  <div class="wrong-only-banner" id="wrongBanner">오답 재도전 모드 — 틀린 문제만 표시됩니다.</div>
+
+  <div id="quizArea"></div>
+  <div class="result-panel" id="resultPanel">
+    <div class="score-circle"><span class="num" id="scoreNum">0</span><span class="denom" id="scoreDenom">/ 12</span></div>
+    <h2 id="resultTitle"></h2>
+    <p id="resultMsg"></p>
+    <div class="btn-row">
+      <button class="btn primary" onclick="retryWrong()">오답만 다시 풀기</button>
+      <button class="btn" onclick="restartAll()">전체 다시 풀기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ALL_QUESTIONS = [
+  {
+    topic: "비교",
+    q: "문벌귀족 체제의 정치 운영 원리를 가장 잘 나타낸 것은?",
+    opts: [
+      "집권자 사저 중심의 사부(私府) 정치",
+      "2성 6부 공적 관료제와 재추 회의의 합의 정치",
+      "교정도감을 통한 비상 통치",
+      "사병 집단에 의한 무력 지배"
+    ],
+    ans: 1,
+    exp: "문벌귀족 체제는 <strong>2성 6부의 공적 관료제</strong>를 토대로, <strong>재추 회의(도병마사·식목도감)</strong>를 통한 귀족 간 합의 정치를 운영 원리로 삼았습니다. 나머지는 모두 무신정권의 사부(私府) 정치 특징입니다.",
+    keywords: ["2성 6부","재추 회의","합의 정치","문벌귀족"]
+  },
+  {
+    topic: "비교",
+    q: "문벌귀족 체제와 비교한 무신정권 권력 구조의 가장 본질적인 차이는?",
+    opts: [
+      "공적 합의 기구를 더욱 확대·강화하였다",
+      "공적 기구를 무력화하고 집권자의 사적 기구 중심으로 운영하였다",
+      "국왕 친정 체제를 확립하였다",
+      "과거제를 통한 능력주의 인사를 강화하였다"
+    ],
+    ans: 1,
+    exp: "무신정권은 2성 6부·재추 회의 등 <strong>공적 기구를 형해화</strong>하고, 집권자의 사저에 설치된 기구를 중심으로 권력을 행사하는 <strong>사부(私府) 정치 체제</strong>였습니다. 이것이 합의 정치를 핵심으로 한 문벌귀족 체제와의 본질적 차이입니다.",
+    keywords: ["사부 정치","공적 기구 무력화","사적 기구"]
+  },
+  {
+    topic: "비교",
+    q: "고려 문벌귀족기 재추(宰樞)가 모여 국방·법제를 합의하던 회의 기구로 옳게 묶은 것은?",
+    opts: [
+      "교정도감 · 정방",
+      "도병마사 · 식목도감",
+      "도방 · 서방",
+      "중추원 · 어사대"
+    ],
+    ans: 1,
+    exp: "<strong>도병마사(국방·군사)</strong>와 <strong>식목도감(법제·격식)</strong>은 재신과 추밀이 함께 모여 국가 중대사를 합의하던 고려 특유의 회의 기구입니다. 이는 귀족 간 합의 정치를 상징합니다.",
+    keywords: ["도병마사","식목도감","재추 회의"]
+  },
+  {
+    topic: "교정도감",
+    q: "최충헌이 설치하여 감찰·인사·세금 징수 등 국정 전반을 장악한 무신정권 최고 권력기구는?",
+    opts: ["정방","교정도감","식목도감","중서문하성"],
+    ans: 1,
+    exp: "<strong>교정도감</strong>은 최충헌이 설치한 최고 권력기구로 국정 전반을 장악하였습니다. 비상 임시기구로 출발하였으나 <strong>상설 최고 권력기구</strong>로 고착된 것이 핵심입니다.",
+    keywords: ["교정도감","최충헌","최고 권력기구","상설화"]
+  },
+  {
+    topic: "교정도감",
+    q: "교정도감의 수장으로, 무신 집권자가 세습하며 사실상 최고 통치자 지위를 누린 직책은?",
+    opts: ["교정별감","정방별감","도방대장","문하시중"],
+    ans: 0,
+    exp: "교정도감의 수장인 <strong>교정별감</strong>은 무신 집권자가 세습하며 사실상 최고 통치자의 지위를 누렸습니다. 이는 공적 관직 체계와 무관하게 권력이 사적으로 세습되었음을 보여줍니다.",
+    keywords: ["교정별감","세습","집권자"]
+  },
+  {
+    topic: "정방",
+    q: "최우가 자신의 집에 설치하여 문무관 인사권을 사유화한 기구는?",
+    opts: ["서방","정방","도방","교정도감"],
+    ans: 1,
+    exp: "<strong>정방</strong>은 최우가 자신의 집에 설치한 인사 행정 기구로, 문무관의 인사권을 장악하여 권력을 강화하였습니다. 국가의 공적 인사 기능을 사적으로 흡수한 것입니다.",
+    keywords: ["정방","최우","인사권 사유화"]
+  },
+  {
+    topic: "정방",
+    q: "정방이 고려 왕권·관료제에 미친 장기적 영향으로 옳은 것은?",
+    opts: [
+      "무신정권 붕괴와 동시에 폐지되어 영향이 없었다",
+      "무신정권 붕괴 후에도 존속하며 권문세족 인사 부정의 근거지가 되었다",
+      "과거제를 강화하여 관료제를 건전하게 만들었다",
+      "국왕이 직접 인사권을 회복하는 계기가 되었다"
+    ],
+    ans: 1,
+    exp: "<strong>정방은 무신정권 붕괴 후에도 존속</strong>하며 권문세족의 인사 부정(낙점 등)의 근거지가 되어 고려 말까지 관료제의 건전성을 침식하였습니다. 그래서 공민왕대 개혁의 주요 폐지 대상이 됩니다.",
+    keywords: ["정방 존속","권문세족","인사 부정","고려 말"]
+  },
+  {
+    topic: "서방",
+    q: "최우가 문객 중 지식인을 포섭하여 정책 자문을 맡긴 기구로, 무신의 무력과 문신의 실무를 결합한 것은?",
+    opts: ["서방","정방","도방","교정도감"],
+    ans: 0,
+    exp: "<strong>서방</strong>은 최우가 설치한 정치 자문 기구로, 문객 중 지식인을 등용해 정책을 보좌하게 함으로써 무신의 무력과 문신의 행정 실무 능력을 결합하였습니다.",
+    keywords: ["서방","문객 지식인","정책 자문","문무 결합"]
+  },
+  {
+    topic: "군사기반",
+    q: "경대승이 처음 설치하고 최충헌이 강화한, 무신정권의 사병적 군사 기반은?",
+    opts: ["삼별초","도방","별무반","2군 6위"],
+    ans: 1,
+    exp: "<strong>도방</strong>은 경대승이 신변 보호를 위해 처음 설치한 사병 집단으로, 최충헌이 확대·강화하여 최씨 정권의 군사적 기반으로 삼았습니다. 사적 지배를 무력으로 뒷받침한 핵심 기구입니다.",
+    keywords: ["도방","경대승","사병","군사 기반"]
+  },
+  {
+    topic: "군사기반",
+    q: "최우가 만든 야별초에서 비롯되어 좌·우별초와 신의군으로 구성된, 공적 군대이면서 사병 역할도 한 조직은?",
+    opts: ["별무반","삼별초","주진군","광군"],
+    ans: 1,
+    exp: "<strong>삼별초</strong>는 최우의 야별초에서 비롯되어 좌별초·우별초·신의군으로 구성되었습니다. 공적 군대의 성격을 띠면서도 최씨 정권의 사병 역할을 하여, 사적 권력의 무력 기반을 이루었습니다.",
+    keywords: ["삼별초","야별초","좌우별초·신의군"]
+  },
+  {
+    topic: "영향",
+    q: "무신정권 권력기관이 고려 왕권에 미친 영향으로 옳은 것은?",
+    opts: [
+      "국왕의 친정 체제가 강화되었다",
+      "국왕이 상징적 존재로 전락하여 왕권이 허구화되었다",
+      "왕실 재정이 크게 확충되었다",
+      "국왕이 재추 회의를 직접 주재하게 되었다"
+    ],
+    ans: 1,
+    exp: "모든 실권이 무신 집권자의 사저로 집중되면서 <strong>국왕은 상징적 존재로 전락하여 왕권이 허구화</strong>되었고, 왕조의 통치 정당성이 훼손되었습니다.",
+    keywords: ["왕권 허구화","상징적 존재","통치 정당성"]
+  },
+  {
+    topic: "영향",
+    q: "무신정권 사적 기구의 폐단 청산을 국가 재건의 제1 개혁 과제로 삼은 고려 말의 주체로 옳게 묶은 것은?",
+    opts: [
+      "광종 · 쌍기",
+      "공민왕 · 신진사대부",
+      "최승로 · 성종",
+      "묘청 · 정지상"
+    ],
+    ans: 1,
+    exp: "무신정권 사적 기구(특히 정방)의 폐단은 고려 말 <strong>공민왕과 신진사대부</strong>가 국가 재건을 위해 가장 먼저 청산해야 할 개혁 과제로 지목하였습니다. 공민왕은 정방 폐지를 시도하였습니다.",
+    keywords: ["공민왕","신진사대부","정방 폐지","개혁 과제"]
+  }
+];
+
+let currentQuestions = [];
+let wrongIds = [];
+let answered = [];
+let score = 0;
+let isWrongOnlyMode = false;
+
+function init(questions, wrongOnly = false) {
+  currentQuestions = questions;
+  wrongIds = [];
+  answered = new Array(questions.length).fill(false);
+  score = 0;
+  isWrongOnlyMode = wrongOnly;
+  document.getElementById('wrongBanner').className = wrongOnly ? 'wrong-only-banner show' : 'wrong-only-banner';
+  document.getElementById('resultPanel').className = 'result-panel';
+  renderAll();
+  updateProgress();
+}
+
+function renderAll() {
+  const area = document.getElementById('quizArea');
+  area.innerHTML = currentQuestions.map((q, i) => renderCard(q, i)).join('');
+}
+
+function renderCard(q, i) {
+  const optsHtml = q.opts.map((o, oi) =>
+    `<button class="opt-btn" id="opt_${i}_${oi}" onclick="choose(${i},${oi})">${String.fromCharCode(9312+oi)} ${o}</button>`
+  ).join('');
+  const kwHtml = q.keywords.map(k => `<span class="keyword-chip">${k}</span>`).join('');
+  return `
+  <div class="quiz-card" id="card_${i}">
+    <span class="q-num">Q${i+1}</span><span class="q-topic">${q.topic}</span>
+    <p class="q-text">${q.q}</p>
+    <div class="options">${optsHtml}</div>
+    <div class="explanation" id="exp_${i}">
+      <p>${q.exp}</p>
+      <div style="margin-top:0.5rem;">${kwHtml}</div>
+    </div>
+  </div>`;
+}
+
+function choose(qIdx, optIdx) {
+  if (answered[qIdx]) return;
+  answered[qIdx] = true;
+  const q = currentQuestions[qIdx];
+  const isCorrect = optIdx === q.ans;
+  if (isCorrect) { score++; }
+  else { wrongIds.push(qIdx); }
+
+  for (let i = 0; i < q.opts.length; i++) {
+    const btn = document.getElementById(`opt_${qIdx}_${i}`);
+    btn.disabled = true;
+    if (i === q.ans) btn.classList.add(isCorrect && i === optIdx ? 'correct' : 'reveal');
+    if (!isCorrect && i === optIdx) btn.classList.add('wrong');
+  }
+  document.getElementById(`exp_${qIdx}`).classList.add('show');
+  updateProgress();
+
+  if (answered.every(Boolean)) {
+    setTimeout(showResult, 600);
+  }
+}
+
+function updateProgress() {
+  const done = answered.filter(Boolean).length;
+  const total = currentQuestions.length;
+  document.getElementById('pbar').style.width = (done/total*100)+'%';
+  document.getElementById('plabel').textContent = `${done} / ${total} 완료`;
+}
+
+function showResult() {
+  const total = currentQuestions.length;
+  const pct = Math.round(score/total*100);
+  document.getElementById('scoreNum').textContent = score;
+  document.getElementById('scoreDenom').textContent = `/ ${total}`;
+  const titles = ['다시 도전해 보세요', '기초를 다져봅시다', '조금 더 공부가 필요해요', '잘 이해하고 있어요', '거의 완벽해요', '만점! 완벽합니다'];
+  const msgs = [
+    '모범답안의 키워드를 다시 정리해 보세요.',
+    '필수 키워드 표를 먼저 암기해 보세요.',
+    '틀린 문제의 해설을 꼼꼼히 읽어보세요.',
+    '오답 문제를 한 번 더 풀어보면 완성됩니다.',
+    '핵심 키워드를 시험장에서도 떠올릴 수 있을 거예요.',
+    '이 주제는 완벽하게 정복했습니다!'
+  ];
+  const idx = Math.min(Math.floor(pct/20), 5);
+  document.getElementById('resultTitle').textContent = titles[idx];
+  document.getElementById('resultMsg').textContent = msgs[idx];
+  document.getElementById('resultPanel').className = 'result-panel show';
+  document.getElementById('resultPanel').scrollIntoView({behavior:'smooth'});
+}
+
+function retryWrong() {
+  if (wrongIds.length === 0) { alert('모든 문제를 맞혔습니다!'); return; }
+  const wrongQs = wrongIds.map(i => currentQuestions[i]);
+  init(wrongQs, true);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function restartAll() {
+  init(ALL_QUESTIONS, false);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+init(ALL_QUESTIONS);
+</script>
+</body>
+</html>

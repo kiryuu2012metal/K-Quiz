@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>농사직설 퀴즈</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0f172a; font-family: 'Noto Serif KR', Georgia, serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  #app { width: 100%; max-width: 580px; }
+  .header { text-align: center; margin-bottom: 20px; }
+  .header-title { color: #f59e0b; font-size: 12px; letter-spacing: 4px; font-weight: 700; margin-bottom: 4px; }
+  .header-count { color: #475569; font-size: 13px; }
+  .progress-bg { background: #1e293b; border-radius: 999px; height: 6px; margin-bottom: 18px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #f59e0b, #ef4444); border-radius: 999px; transition: width 0.4s; }
+  .score-row { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+  .score-badge { background: #1e293b; color: #fbbf24; font-size: 13px; font-weight: 700; padding: 4px 14px; border-radius: 999px; border: 1px solid #334155; }
+  .card { background: #1e293b; border-radius: 20px; padding: 26px 22px; border: 1px solid #334155; margin-bottom: 14px; }
+  .cat-tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 12px; border-radius: 999px; margin-bottom: 14px; }
+  .question { color: #f1f5f9; font-size: 17px; font-weight: 700; line-height: 1.7; margin-bottom: 22px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option { background: #0f172a; border: 2px solid #334155; border-radius: 12px; padding: 13px 16px; text-align: left; cursor: pointer; color: #cbd5e1; font-size: 15px; line-height: 1.5; transition: all 0.15s; display: flex; align-items: center; gap: 10px; font-family: inherit; width: 100%; }
+  .option:hover { border-color: #3b82f6; background: #1e3a5f; color: #93c5fd; }
+  .option.selected { background: #1e3a5f; border-color: #3b82f6; color: #93c5fd; font-weight: 700; }
+  .option.correct { background: #052e16 !important; border-color: #22c55e !important; color: #86efac !important; font-weight: 700; }
+  .option.wrong { background: #3f1212 !important; border-color: #ef4444 !important; color: #fca5a5 !important; font-weight: 700; }
+  .option.disabled { cursor: default; }
+  .prefix { font-size: 17px; flex-shrink: 0; }
+  .opt-icon { margin-left: auto; }
+  .explanation { border-radius: 14px; padding: 15px 18px; margin-bottom: 14px; }
+  .explanation.correct-exp { background: #052e16; border: 1px solid #22c55e; }
+  .explanation.wrong-exp { background: #1c1917; border: 1px solid #78716c; }
+  .exp-title { font-weight: 700; margin-bottom: 6px; font-size: 14px; }
+  .exp-body { color: #cbd5e1; font-size: 13px; line-height: 1.7; }
+  .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+  .btn-confirm { background: #1e293b; color: #475569; }
+  .btn-confirm.active { background: #f59e0b; color: #0f172a; }
+  .btn-next { background: #3b82f6; color: #fff; }
+  .dots { display: flex; justify-content: center; gap: 5px; margin-top: 18px; flex-wrap: wrap; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #1e293b; border: 2px solid #334155; transition: all 0.3s; }
+  .dot.done { background: #22c55e; border-color: #22c55e; }
+  .dot.active { background: #f59e0b; border-color: #f59e0b; }
+
+  /* Result */
+  #result { display: none; }
+  .result-card { background: #1e293b; border-radius: 20px; padding: 40px 32px; text-align: center; border: 1px solid #334155; margin-bottom: 14px; }
+  .result-emoji { font-size: 52px; margin-bottom: 6px; }
+  .result-label { color: #94a3b8; font-size: 13px; letter-spacing: 3px; margin-bottom: 10px; }
+  .result-score { font-size: 60px; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+  .result-grade { font-size: 19px; font-weight: 700; margin-bottom: 28px; }
+  .bar-row { margin-bottom: 10px; }
+  .bar-label { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .bar-bg { background: #0f172a; border-radius: 999px; height: 8px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 999px; }
+  .result-btns { display: flex; gap: 10px; margin-bottom: 12px; }
+  .btn-restart { flex: 1; padding: 14px; background: #3b82f6; color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .btn-review { flex: 1; padding: 14px; background: #dc2626; color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .wrong-item { border-radius: 14px; padding: 20px; margin-bottom: 10px; }
+  .wrong-header { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .wrong-q { color: #e2e8f0; font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+  .wrong-chosen { background: #3f1212; border: 1px solid #7f1d1d; border-radius: 8px; padding: 8px 12px; margin-bottom: 6px; color: #fca5a5; font-size: 13px; }
+  .wrong-ans { background: #052e16; border: 1px solid #14532d; border-radius: 8px; padding: 8px 12px; margin-bottom: 10px; color: #86efac; font-size: 13px; }
+  .wrong-exp { color: #94a3b8; font-size: 12px; line-height: 1.7; border-top: 1px solid #334155; padding-top: 10px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="quiz">
+    <div class="header">
+      <div class="header-title">📜 농사직설 확인 퀴즈</div>
+      <div class="header-count" id="count">1 / 15</div>
+    </div>
+    <div class="progress-bg"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+    <div class="score-row"><span class="score-badge" id="score-badge">✅ 0점</span></div>
+    <div class="card">
+      <div id="cat-tag" class="cat-tag"></div>
+      <div id="question" class="question"></div>
+      <div id="options" class="options"></div>
+    </div>
+    <div id="explanation" class="explanation" style="display:none">
+      <div class="exp-title" id="exp-title"></div>
+      <div class="exp-body" id="exp-body"></div>
+    </div>
+    <button id="main-btn" class="btn btn-confirm" onclick="handleBtn()">정답 확인</button>
+    <div class="dots" id="dots"></div>
+  </div>
+
+  <div id="result">
+    <div class="result-card">
+      <div class="result-emoji" id="r-emoji"></div>
+      <div class="result-label">최종 결과</div>
+      <div class="result-score" id="r-score"></div>
+      <div class="result-grade" id="r-grade"></div>
+      <div id="r-bars"></div>
+    </div>
+    <div class="result-btns">
+      <button class="btn-restart" onclick="restart()">🔄 다시 풀기</button>
+      <button class="btn-review" id="review-btn" onclick="toggleReview()"></button>
+    </div>
+    <div id="wrong-list"></div>
+  </div>
+</div>
+
+<script>
+const questions = [
+  { id:1, category:"편찬 배경", question:"농사직설이 편찬된 왕의 재위 시기는?", options:["태조","태종","세종","성종"], answer:2, explanation:"농사직설은 1429년(세종 11년)에 세종의 명으로 편찬·반포되었습니다." },
+  { id:2, category:"편찬 과정", question:"농사직설을 실제로 편찬한 인물은?", options:["정도전·조준","정초·변효문","김종직·정여창","이황·이이"], answer:1, explanation:"세종의 명을 받아 정초(鄭招)·변효문(卞孝文) 등이 편찬하였습니다. 세종이 직접 저술한 것이 아님에 주의하세요." },
+  { id:3, category:"편찬 과정", question:"농사직설의 편찬 연도로 옳은 것은?", options:["1392년","1418년","1429년","1443년"], answer:2, explanation:"1429년(세종 11년)에 완성·반포되었습니다. 1443년은 훈민정음 창제 연도입니다." },
+  { id:4, category:"편찬 배경", question:"농사직설 편찬의 직접적 계기가 된 중국 농서를 모두 고른 것은?", options:["제민요술·농가집성","농상집요·임원경제지","제민요술·농상집요","산림경제·농가집성"], answer:2, explanation:"조선에서 기존에 활용하던 중국 농서는 『제민요술』과 『농상집요』입니다. 『농가집성』 등은 농사직설 이후에 편찬된 후대 농서입니다." },
+  { id:5, category:"편찬 과정", question:"농사직설 편찬 과정에서 핵심적으로 활용한 방법은?", options:["중국 황실 문서 번역","노농(老農)의 경험을 직접 문답·채록","성균관 학자들의 이론 연구","일본 농서 참고 및 번역"], answer:1, explanation:"각 도 감사에게 농법을 수집하게 하고, 농사 경험이 풍부한 노농을 직접 문답·채록한 경험적·귀납적 방법론이 핵심입니다." },
+  { id:6, category:"내용 특징", question:"농사직설에서 활용한 문체(文體)로 옳은 것은?", options:["순한문(純漢文)","훈민정음","이두(吏讀)","구결(口訣)"], answer:2, explanation:"이두(吏讀)를 활용한 간결한 문체를 사용하여 지방 수령과 농민이 현장에서 실용적으로 활용할 수 있도록 하였습니다." },
+  { id:7, category:"내용 특징", question:"농사직설에서 소개하면서 동시에 가뭄 피해를 경고한 농법은?", options:["직파법(直播法)","이앙법(移秧法)","윤작법(輪作法)","화전법(火田法)"], answer:1, explanation:"이앙법(모내기)을 소개하면서도 가뭄 피해 가능성을 함께 경고한 균형 잡힌 서술이 특징입니다." },
+  { id:8, category:"내용 특징", question:"농사직설 편찬 당시 조선에서 주로 시행하던 벼농사 방식은?", options:["이앙법","직파법(直播法)","윤작법","다모작법"], answer:1, explanation:"당시 조선의 벼농사는 직파법(씨를 논에 직접 뿌리는 방식) 위주였습니다. 이앙법은 농사직설에서 소개된 방식입니다." },
+  { id:9, category:"내용 특징", question:"농사직설에 수록된 내용으로 옳지 않은 것은?", options:["종자 선택법","시비(施肥, 거름)법","제초법","수리시설 축조법"], answer:3, explanation:"농사직설에는 작물별 재배법, 종자 선택법, 시비법, 제초법 등이 수록되었습니다. 수리시설 축조법은 포함되지 않습니다." },
+  { id:10, category:"내용 특징", question:"농사직설의 구성 분류 방식으로 옳은 것은?", options:["지역별 분류","계절별(춘하추동) 분류","수전(水田)·한전(旱田) 구분 + 작물별 편제","신분별(양반·농민) 분류"], answer:2, explanation:"논농사(수전)와 밭농사(한전)를 체계적으로 분류하고, 작물별로 편제하여 서술하였습니다." },
+  { id:11, category:"편찬 배경", question:"농사직설 편찬의 배경으로 옳지 않은 것은?", options:["농본주의 이념에 입각한 권농정책","인구 증가에 따른 식량 수요 증대","중국 농서의 조선 풍토 부적합","조선 후기 상품화폐경제의 발달"], answer:3, explanation:"상품화폐경제 발달은 조선 후기의 현상입니다. 농사직설은 조선 전기(1429년)에 편찬되어 편찬 배경과 무관합니다." },
+  { id:12, category:"농업사적 의의", question:"농사직설이 후대 농서 편찬에 영향을 준 것으로 옳지 않은 것은?", options:["농가집성","산림경제","임원경제지","농상집요"], answer:3, explanation:"『농상집요』는 농사직설 편찬 이전에 존재한 중국 농서입니다. 『농가집성』·『산림경제』·『임원경제지』는 농사직설을 토대로 발전한 후대 농서입니다." },
+  { id:13, category:"농업사적 의의", question:"농사직설과 함께 세종 대 자주적 과학기술 발전의 3대 성과로 꼽히는 것은?", options:["거북선·화차","측우기·훈민정음","자격루·앙부일구","동의보감·천상열차분야지도"], answer:1, explanation:"측우기(기상 관측), 훈민정음(언어 자주), 농사직설(농학 자주)이 세종 대 3대 자주적 과학기술 성과로 평가됩니다." },
+  { id:14, category:"농업사적 의의", question:"농사직설의 학문사적 의의로 가장 적절한 것은?", options:["성리학적 농업 이론의 체계화","경험적·귀납적 농학 방법론 정립","중국 농업 기술의 체계적 도입","도교적 자연관에 입각한 농법 제시"], answer:1, explanation:"노농의 경험을 직접 문답·채록한 경험적·귀납적 방법론 정립이 핵심 학문사적 의의이며, 이후 실학적 농서 발전의 토대가 되었습니다." },
+  { id:15, category:"농업사적 의의", question:"농사직설의 정치·경제적 의의로 가장 적절한 것은?", options:["대외 무역 확대를 위한 기반 마련","신분제 완화를 위한 농민 계몽","권농정책의 실천 도구로서 안정적 조세 기반 확보에 기여","양반 중심 토지 소유 구조 강화"], answer:2, explanation:"농사직설은 권농정책의 실천 도구이자, 농업 생산력 증대를 통해 조선 초기 안정적인 조세 기반을 확보하려는 국가적 노력의 결정체입니다." },
+];
+
+const catStyle = {
+  "편찬 배경":    { bg:"#fef3c7", text:"#92400e", border:"#f59e0b" },
+  "편찬 과정":    { bg:"#dbeafe", text:"#1e40af", border:"#3b82f6" },
+  "내용 특징":    { bg:"#d1fae5", text:"#065f46", border:"#10b981" },
+  "농업사적 의의":{ bg:"#ede9fe", text:"#4c1d95", border:"#8b5cf6" },
+};
+const prefixes = ["①","②","③","④"];
+
+let current = 0, selected = null, confirmed = false, score = 0, wrongList = [], reviewOpen = false;
+
+function render() {
+  const q = questions[current];
+  const cs = catStyle[q.category];
+  document.getElementById('count').textContent = `${current+1} / ${questions.length}`;
+  document.getElementById('progress').style.width = `${(current/questions.length)*100}%`;
+  document.getElementById('score-badge').textContent = `✅ ${score}점`;
+
+  const tag = document.getElementById('cat-tag');
+  tag.textContent = q.category;
+  tag.style.background = cs.bg; tag.style.color = cs.text; tag.style.border = `1px solid ${cs.border}`;
+
+  document.getElementById('question').textContent = q.question;
+
+  const optDiv = document.getElementById('options');
+  optDiv.innerHTML = '';
+  q.options.forEach((opt, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'option' + (confirmed ? ' disabled' : '');
+    if (confirmed) {
+      if (idx === q.answer) btn.classList.add('correct');
+      else if (idx === selected && selected !== q.answer) btn.classList.add('wrong');
+    } else if (selected === idx) btn.classList.add('selected');
+    btn.innerHTML = `<span class="prefix">${prefixes[idx]}</span><span>${opt}</span>${confirmed && idx===q.answer ? '<span class="opt-icon">✅</span>' : confirmed && idx===selected && selected!==q.answer ? '<span class="opt-icon">❌</span>' : ''}`;
+    if (!confirmed) btn.onclick = () => { selected = idx; render(); };
+    optDiv.appendChild(btn);
+  });
+
+  const expDiv = document.getElementById('explanation');
+  if (confirmed) {
+    expDiv.style.display = 'block';
+    expDiv.className = 'explanation ' + (selected===q.answer ? 'correct-exp' : 'wrong-exp');
+    document.getElementById('exp-title').style.color = selected===q.answer ? '#4ade80' : '#fbbf24';
+    document.getElementById('exp-title').textContent = selected===q.answer ? '🎉 정답입니다!' : '💡 해설';
+    document.getElementById('exp-body').textContent = q.explanation;
+  } else { expDiv.style.display = 'none'; }
+
+  const btn = document.getElementById('main-btn');
+  if (!confirmed) {
+    btn.textContent = '정답 확인'; btn.className = 'btn btn-confirm' + (selected!==null ? ' active' : '');
+    btn.onclick = handleBtn;
+  } else {
+    btn.textContent = current+1 >= questions.length ? '결과 보기 →' : '다음 문제 →';
+    btn.className = 'btn btn-next'; btn.onclick = handleBtn;
+  }
+
+  const dots = document.getElementById('dots'); dots.innerHTML = '';
+  questions.forEach((_,i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i<current?' done':i===current?' active':'');
+    dots.appendChild(d);
+  });
+}
+
+function handleBtn() {
+  if (!confirmed) {
+    if (selected === null) return;
+    confirmed = true;
+    if (selected === questions[current].answer) score++;
+    else wrongList.push({...questions[current], chosen: selected});
+    render();
+  } else {
+    if (current+1 >= questions.length) showResult();
+    else { current++; selected=null; confirmed=false; render(); }
+  }
+}
+
+function showResult() {
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('result').style.display = 'block';
+  const g = score>=14?{e:"🏆",l:"최우수",c:"#059669"}:score>=12?{e:"🥇",l:"우수",c:"#2563eb"}:score>=10?{e:"📖",l:"양호",c:"#d97706"}:{e:"✍️",l:"재학습 필요",c:"#dc2626"};
+  document.getElementById('r-emoji').textContent = g.e;
+  document.getElementById('r-score').innerHTML = `<span style="color:${g.c}">${score}</span><span style="font-size:26px;color:#64748b"> / 15</span>`;
+  document.getElementById('r-grade').style.color = g.c;
+  document.getElementById('r-grade').textContent = g.l;
+
+  const bars = document.getElementById('r-bars'); bars.innerHTML = '';
+  ["편찬 배경","편찬 과정","내용 특징","농업사적 의의"].forEach(cat => {
+    const total = questions.filter(q=>q.category===cat).length;
+    const correct = total - wrongList.filter(w=>w.category===cat).length;
+    const cs = catStyle[cat];
+    bars.innerHTML += `<div class="bar-row"><div class="bar-label"><span style="color:#cbd5e1;font-size:13px">${cat}</span><span style="color:#94a3b8;font-size:13px">${correct}/${total}</span></div><div class="bar-bg"><div class="bar-fill" style="width:${Math.round(correct/total*100)}%;background:${cs.border}"></div></div></div>`;
+  });
+
+  const rb = document.getElementById('review-btn');
+  if (wrongList.length > 0) { rb.style.display='block'; rb.textContent=`❌ 오답 보기 (${wrongList.length})`; }
+  else rb.style.display='none';
+}
+
+function toggleReview() {
+  reviewOpen = !reviewOpen;
+  const wl = document.getElementById('wrong-list');
+  const rb = document.getElementById('review-btn');
+  if (reviewOpen) {
+    rb.textContent = '오답 닫기';
+    wl.innerHTML = wrongList.map(w => {
+      const cs = catStyle[w.category];
+      return `<div class="wrong-item" style="background:#1e293b;border:1px solid ${cs.border}">
+        <div class="wrong-header"><span style="background:${cs.bg};color:${cs.text};font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px">${w.category}</span><span style="color:#64748b;font-size:12px">Q${w.id}</span></div>
+        <div class="wrong-q">${w.question}</div>
+        <div class="wrong-chosen">❌ 내 답: ${w.options[w.chosen]}</div>
+        <div class="wrong-ans">✅ 정답: ${w.options[w.answer]}</div>
+        <div class="wrong-exp">💡 ${w.explanation}</div>
+      </div>`;
+    }).join('');
+  } else { rb.textContent=`❌ 오답 보기 (${wrongList.length})`; wl.innerHTML=''; }
+}
+
+function restart() {
+  current=0; selected=null; confirmed=false; score=0; wrongList=[]; reviewOpen=false;
+  document.getElementById('quiz').style.display='block';
+  document.getElementById('result').style.display='none';
+  document.getElementById('wrong-list').innerHTML='';
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

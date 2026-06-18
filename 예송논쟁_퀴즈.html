@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>예송논쟁 & 붕당정치 퀴즈</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700;900&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1208;
+    --paper: #f5f0e8;
+    --aged: #e8dfc8;
+    --gold: #b8860b;
+    --gold-light: #d4a017;
+    --red: #8b1a1a;
+    --red-light: #c0392b;
+    --blue: #1a3a5c;
+    --blue-light: #2980b9;
+    --green: #1a5c2e;
+    --green-light: #27ae60;
+    --shadow: rgba(26,18,8,0.15);
+    --radius: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--aged);
+    color: var(--ink);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 10%, rgba(184,134,11,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 90%, rgba(139,26,26,0.06) 0%, transparent 50%);
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 28px 24px 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      90deg,
+      transparent 0px, transparent 18px,
+      rgba(184,134,11,0.06) 18px, rgba(184,134,11,0.06) 19px
+    );
+  }
+  .header-badge {
+    display: inline-block;
+    font-family: 'Noto Serif KR', serif;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    padding: 4px 14px;
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .header h1 {
+    font-family: 'Noto Serif KR', serif;
+    font-size: clamp(22px, 5vw, 32px);
+    font-weight: 900;
+    position: relative;
+    line-height: 1.3;
+  }
+  .header h1 span { color: var(--gold-light); }
+  .header-sub {
+    margin-top: 6px;
+    font-size: 13px;
+    color: rgba(245,240,232,0.6);
+    position: relative;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap {
+    background: var(--ink);
+    padding: 0 24px 16px;
+  }
+  .progress-info {
+    display: flex; justify-content: space-between;
+    font-size: 12px; color: rgba(245,240,232,0.5);
+    margin-bottom: 6px;
+  }
+  .progress-track {
+    height: 4px; background: rgba(255,255,255,0.1);
+    border-radius: 2px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    border-radius: 2px;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+    width: 0%;
+  }
+
+  /* ── MAIN CONTAINER ── */
+  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px 60px; }
+
+  /* ── SCORE STRIP ── */
+  .score-strip {
+    display: flex; gap: 10px; margin-bottom: 20px;
+  }
+  .score-chip {
+    flex: 1; background: var(--paper);
+    border-radius: var(--radius);
+    padding: 12px 8px; text-align: center;
+    box-shadow: 0 2px 8px var(--shadow);
+    border-top: 3px solid transparent;
+  }
+  .score-chip.correct  { border-top-color: var(--green-light); }
+  .score-chip.wrong    { border-top-color: var(--red-light); }
+  .score-chip.remain   { border-top-color: var(--gold); }
+  .score-chip .num {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 26px; font-weight: 900;
+    line-height: 1;
+  }
+  .score-chip.correct .num { color: var(--green); }
+  .score-chip.wrong   .num { color: var(--red); }
+  .score-chip.remain  .num { color: var(--gold); }
+  .score-chip .label { font-size: 11px; color: #888; margin-top: 3px; }
+
+  /* ── QUESTION CARD ── */
+  .q-card {
+    background: var(--paper);
+    border-radius: var(--radius);
+    box-shadow: 0 4px 20px var(--shadow);
+    overflow: hidden;
+    animation: cardIn 0.35s ease;
+  }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .q-header {
+    background: var(--ink);
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .q-num {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 13px; font-weight: 700;
+    color: var(--gold);
+    white-space: nowrap;
+  }
+  .q-category {
+    font-size: 11px; letter-spacing: 1px;
+    color: rgba(245,240,232,0.45);
+    margin-left: auto;
+  }
+  .q-body { padding: 22px 20px 0; }
+  .q-text {
+    font-family: 'Noto Serif KR', serif;
+    font-size: clamp(15px, 3.5vw, 17px);
+    font-weight: 600;
+    line-height: 1.7;
+    color: var(--ink);
+    margin-bottom: 20px;
+  }
+
+  /* ── OPTIONS ── */
+  .options { display: flex; flex-direction: column; gap: 8px; padding-bottom: 4px; }
+  .opt-btn {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 14px 16px;
+    background: white;
+    border: 1.5px solid #ddd6c4;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 14px; line-height: 1.6;
+    text-align: left; color: var(--ink);
+    transition: all 0.18s;
+  }
+  .opt-btn:hover:not(:disabled) {
+    border-color: var(--gold);
+    background: #fffdf5;
+    transform: translateX(3px);
+  }
+  .opt-btn .opt-label {
+    font-family: 'Noto Serif KR', serif;
+    font-weight: 700; font-size: 14px;
+    color: var(--gold); min-width: 20px;
+  }
+  .opt-btn.correct-ans {
+    border-color: var(--green-light);
+    background: #f0faf4;
+  }
+  .opt-btn.correct-ans .opt-label { color: var(--green); }
+  .opt-btn.wrong-ans {
+    border-color: var(--red-light);
+    background: #fdf2f2;
+  }
+  .opt-btn.wrong-ans .opt-label { color: var(--red); }
+  .opt-btn:disabled { cursor: default; transform: none; }
+  .opt-icon { margin-left: auto; font-size: 16px; min-width: 20px; text-align: right; }
+
+  /* ── EXPLANATION ── */
+  .explanation {
+    margin: 0 20px 20px;
+    border-radius: 6px;
+    overflow: hidden;
+    animation: explainIn 0.3s ease;
+  }
+  @keyframes explainIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .exp-header {
+    padding: 10px 14px;
+    font-size: 12px; font-weight: 700; letter-spacing: 1px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .explanation.correct .exp-header { background: var(--green); color: white; }
+  .explanation.wrong   .exp-header { background: var(--red);   color: white; }
+  .exp-body {
+    padding: 14px;
+    font-size: 13.5px; line-height: 1.75;
+    background: white; border: 1px solid #e8e0d0; border-top: none;
+  }
+  .exp-body strong { color: var(--gold); }
+
+  /* ── NEXT BUTTON ── */
+  .next-wrap { padding: 16px 20px 20px; }
+  .next-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none; border-radius: 6px;
+    font-family: 'Noto Serif KR', serif;
+    font-size: 15px; font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .next-btn::after {
+    content: ' →';
+    color: var(--gold);
+  }
+  .next-btn:hover { background: #2d2418; }
+
+  /* ── RESULT PAGE ── */
+  .result-page { display: none; animation: cardIn 0.4s ease; }
+  .result-hero {
+    background: var(--ink);
+    border-radius: var(--radius);
+    padding: 36px 24px;
+    text-align: center;
+    color: var(--paper);
+    margin-bottom: 20px;
+    box-shadow: 0 4px 20px var(--shadow);
+    position: relative; overflow: hidden;
+  }
+  .result-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(184,134,11,0.15), transparent 60%);
+  }
+  .result-grade {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 64px; font-weight: 900;
+    color: var(--gold-light);
+    line-height: 1; position: relative;
+  }
+  .result-score-text {
+    font-size: 18px; margin-top: 8px;
+    color: rgba(245,240,232,0.7); position: relative;
+  }
+  .result-msg {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 16px; margin-top: 16px;
+    color: var(--paper); position: relative;
+  }
+
+  .result-breakdown {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; margin-bottom: 20px;
+  }
+  .breakdown-card {
+    background: var(--paper);
+    border-radius: var(--radius);
+    padding: 16px; text-align: center;
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+  .breakdown-card .b-num {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 32px; font-weight: 900;
+  }
+  .breakdown-card.b-correct .b-num { color: var(--green); }
+  .breakdown-card.b-wrong   .b-num { color: var(--red); }
+  .breakdown-card .b-label { font-size: 12px; color: #888; margin-top: 2px; }
+
+  .wrong-list {
+    background: var(--paper);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: 0 2px 8px var(--shadow);
+    margin-bottom: 20px;
+  }
+  .wrong-list h3 {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 15px; font-weight: 700;
+    color: var(--red); margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .wrong-item {
+    padding: 10px 0;
+    border-bottom: 1px dashed #ddd6c4;
+    font-size: 13px; line-height: 1.6;
+    color: #555;
+  }
+  .wrong-item:last-child { border-bottom: none; }
+  .wrong-item strong { color: var(--ink); display: block; margin-bottom: 2px; }
+
+  .action-btns { display: flex; gap: 10px; }
+  .action-btn {
+    flex: 1; padding: 14px;
+    border: none; border-radius: 6px;
+    font-family: 'Noto Serif KR', serif;
+    font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-retry {
+    background: var(--red);
+    color: white;
+  }
+  .btn-retry:hover { background: #6d1515; }
+  .btn-restart {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .btn-restart:hover { background: #2d2418; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-badge">조선사 핵심 논제</div>
+  <h1>예송논쟁 &amp; <span>붕당정치의 변질</span></h1>
+  <p class="header-sub">20문항 · 정답 즉시 해설 · 오답 재도전</p>
+</div>
+<div class="progress-wrap">
+  <div class="progress-info">
+    <span id="prog-label">0 / 20</span>
+    <span id="prog-pct">0%</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+</div>
+
+<div class="container">
+  <!-- SCORE STRIP -->
+  <div class="score-strip">
+    <div class="score-chip correct">
+      <div class="num" id="sc-correct">0</div>
+      <div class="label">정답</div>
+    </div>
+    <div class="score-chip wrong">
+      <div class="num" id="sc-wrong">0</div>
+      <div class="label">오답</div>
+    </div>
+    <div class="score-chip remain">
+      <div class="num" id="sc-remain">20</div>
+      <div class="label">남은 문제</div>
+    </div>
+  </div>
+
+  <!-- QUIZ AREA -->
+  <div id="quiz-area"></div>
+
+  <!-- RESULT PAGE -->
+  <div class="result-page" id="result-page">
+    <div class="result-hero">
+      <div class="result-grade" id="res-grade">--</div>
+      <div class="result-score-text" id="res-score-text"></div>
+      <div class="result-msg" id="res-msg"></div>
+    </div>
+    <div class="result-breakdown">
+      <div class="breakdown-card b-correct">
+        <div class="b-num" id="res-correct">0</div>
+        <div class="b-label">정답</div>
+      </div>
+      <div class="breakdown-card b-wrong">
+        <div class="b-num" id="res-wrong">0</div>
+        <div class="b-label">오답</div>
+      </div>
+    </div>
+    <div class="wrong-list" id="wrong-list-wrap" style="display:none">
+      <h3>📌 오답 문제 목록</h3>
+      <div id="wrong-list-body"></div>
+    </div>
+    <div class="action-btns">
+      <button class="action-btn btn-retry" id="btn-retry" style="display:none" onclick="retryWrong()">오답 다시 풀기</button>
+      <button class="action-btn btn-restart" onclick="restartAll()">처음부터 다시</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ALL_QUESTIONS = [
+  {
+    cat: "붕당정치 배경",
+    q: "조선 후기 붕당정치의 출발점이 된 사림 분열로 가장 먼저 형성된 두 붕당은?",
+    opts: ["동인과 서인", "남인과 북인", "노론과 소론", "서인과 남인"],
+    ans: 0,
+    exp: "16세기 후반 사림이 <strong>동인과 서인</strong>으로 분열되며 붕당정치가 시작되었습니다. 이후 동인은 남인과 북인으로 다시 갈라졌고, 17세기에는 서인과 남인이 주요 붕당으로 대립하였습니다."
+  },
+  {
+    cat: "붕당정치 이념",
+    q: "본래 붕당정치가 추구했던 이상적 정치 원리로 가장 적절한 것은?",
+    opts: ["국왕의 절대 권력 강화", "공론에 의한 상호 비판과 견제", "단일 붕당의 집권 유지", "외척 세력의 정치 참여"],
+    ans: 1,
+    exp: "붕당정치의 본래 이상은 <strong>공론(公論)에 의한 상호 비판과 견제</strong>를 통해 올바른 정치를 실현하는 것이었습니다. 복수 붕당의 공존과 견제, 공론에 의한 정책 결정이 핵심 원리였습니다."
+  },
+  {
+    cat: "기해예송",
+    q: "기해예송(1659)은 어떤 사건을 계기로 발생하였는가?",
+    opts: ["인조 승하 후 소현세자빈의 상복 문제", "효종 승하 후 자의대비의 상복 기간 문제", "현종 승하 후 명성왕후의 상복 문제", "효종비 인선왕후의 승하"],
+    ans: 1,
+    exp: "기해예송(1659)은 <strong>효종 승하 후 자의대비(인조의 계비)가 상복을 얼마나 입어야 하는가</strong>를 둘러싸고 서인과 남인 사이에서 발생한 논쟁입니다."
+  },
+  {
+    cat: "기해예송",
+    q: "기해예송에서 서인 송시열이 주장한 상복 기간은?",
+    opts: ["참최복(3년)", "기년복(1년)", "대공복(9개월)", "소공복(5개월)"],
+    ans: 1,
+    exp: "송시열은 효종이 <strong>차자(둘째 아들)</strong>임을 근거로 자의대비는 <strong>기년복(1년)</strong>을 입어야 한다고 주장하였습니다. 『주자가례』의 종법 질서와 '체이부정(體而不正)'의 논리가 그 근거였습니다."
+  },
+  {
+    cat: "기해예송",
+    q: "기해예송에서 남인 허목이 주장의 근거로 삼은 문헌은?",
+    opts: ["『주자가례』", "『경국대전』", "『의례(儀禮)』", "『소학(小學)』"],
+    ans: 2,
+    exp: "남인 허목은 <strong>『의례(儀禮)』</strong>와 왕실 예제를 근거로, 왕위를 계승한 군주는 장자와 동일하게 보아야 한다며 <strong>참최복(3년)</strong>을 주장하였습니다."
+  },
+  {
+    cat: "기해예송",
+    q: "'체이부정(體而不正)'이란 논리에 관한 설명으로 옳은 것은?",
+    opts: [
+      "왕을 사족 종법질서 밖에 두어야 한다는 남인의 주장",
+      "왕위를 이었으나 적장자가 아니므로 왕실도 종법 원칙을 따라야 한다는 서인의 논리",
+      "왕실의 예제는 일반 사족과 달리 특수하게 적용해야 한다는 원칙",
+      "국왕이 직접 예법을 제정할 수 있다는 왕권 중심 논리"
+    ],
+    ans: 1,
+    exp: "'체이부정'은 <strong>왕통은 이었으나 정통(장자)이 아니다</strong>라는 뜻으로, 서인 송시열이 효종을 차자로 규정하여 자의대비의 상복 기간을 1년으로 주장하는 데 사용한 핵심 논리입니다."
+  },
+  {
+    cat: "기해예송",
+    q: "기해예송의 결과로 옳은 것은?",
+    opts: ["현종이 남인의 참최복(3년) 주장을 채택하였다.", "현종이 서인의 기년복(1년) 주장을 채택하였다.", "양측 주장을 절충하여 대공복(9개월)이 결정되었다.", "결론을 내리지 못하고 다음 왕대로 미뤄졌다."],
+    ans: 1,
+    exp: "기해예송에서 현종은 <strong>서인의 기년복(1년) 주장을 채택</strong>하였습니다. 이로써 서인이 정국의 주도권을 유지하게 되었습니다."
+  },
+  {
+    cat: "갑인예송",
+    q: "갑인예송(1674)의 핵심 쟁점은 무엇인가?",
+    opts: ["효종의 상복 기간", "자의대비의 효종에 대한 복상 기간", "효종비 인선왕후의 상에 대한 자의대비의 복상 기간", "현종의 상복 기간"],
+    ans: 2,
+    exp: "갑인예송은 <strong>효종비 인선왕후가 승하하자 자의대비가 며느리에 대해 얼마나 상복을 입어야 하는가</strong>를 둘러싼 논쟁입니다. 시어머니가 며느리를 위한 복상 문제였습니다."
+  },
+  {
+    cat: "갑인예송",
+    q: "갑인예송에서 서인과 남인이 각각 주장한 상복 기간으로 옳은 것은?",
+    opts: ["서인: 참최복(3년) / 남인: 기년복(1년)", "서인: 기년복(1년) / 남인: 대공복(9개월)", "서인: 대공복(9개월) / 남인: 기년복(1년)", "서인: 소공복(5개월) / 남인: 대공복(9개월)"],
+    ans: 2,
+    exp: "갑인예송에서 <strong>서인은 대공복(9개월)</strong>, <strong>남인은 기년복(1년)</strong>을 주장하였습니다. 현종은 남인의 기년복 주장을 채택하여 남인이 정국을 주도하게 되었습니다."
+  },
+  {
+    cat: "갑인예송",
+    q: "갑인예송이 이후 환국정치의 구조적 토대가 된 이유로 가장 적절한 것은?",
+    opts: [
+      "예법 논쟁이 완전히 해결되어 붕당 갈등이 사라졌기 때문",
+      "현종의 결정이 붕당의 운명을 좌우한다는 인식을 강화시켰기 때문",
+      "남인과 서인이 합의하여 새로운 예법 체계를 만들었기 때문",
+      "서인이 완전히 몰락하여 붕당정치가 종식되었기 때문"
+    ],
+    ans: 1,
+    exp: "갑인예송을 계기로 <strong>군주의 재결이 붕당의 정치적 운명을 결정한다</strong>는 인식이 고착되었습니다. 이는 숙종이 환국을 왕권 강화 수단으로 활용하는 구조적 토대가 되었습니다."
+  },
+  {
+    cat: "예송의 정치적 성격",
+    q: "예송논쟁의 표면적 쟁점과 실질적 성격을 바르게 연결한 것은?",
+    opts: [
+      "표면: 세금 문제 / 실질: 군사력 강화 논쟁",
+      "표면: 상복 기간 예법 / 실질: 왕권·신권 관계 및 왕위 계승 정통성 논쟁",
+      "표면: 토지 분배 / 실질: 외척 세력 견제",
+      "표면: 과거 제도 개혁 / 실질: 붕당 간 인사권 다툼"
+    ],
+    ans: 1,
+    exp: "예송은 표면적으로 <strong>상복 기간</strong>을 둘러싼 예법 논쟁이었으나, 실질적으로는 <strong>왕위 계승의 정통성</strong>과 <strong>왕권·신권의 관계</strong>를 규정하는 이념 투쟁이었습니다."
+  },
+  {
+    cat: "예송의 정치적 성격",
+    q: "예송논쟁에서 서인의 이념적 지향으로 가장 적절한 것은?",
+    opts: [
+      "왕실 예제의 특수성을 인정하여 왕권 독자성 강화",
+      "왕을 사족 종법질서 안에 편입시켜 신권 강화",
+      "왕권과 신권의 균형을 추구하는 중도적 입장",
+      "왕권을 절대화하여 붕당정치 폐지 주장"
+    ],
+    ans: 1,
+    exp: "서인은 <strong>왕을 사족(士族)의 종법질서 안에 편입</strong>시키려 하였습니다. 이는 왕도 사대부의 예법을 따라야 한다는 논리로, 결과적으로 <strong>신권 강화</strong>를 지향하는 입장이었습니다."
+  },
+  {
+    cat: "예송의 정치적 성격",
+    q: "예송논쟁에서 남인의 이념적 지향으로 가장 적절한 것은?",
+    opts: [
+      "왕을 일반 사족과 동일하게 취급하여 신권 강화",
+      "왕실 예제의 특수성을 인정하여 왕권의 독자성 옹호",
+      "붕당 간 타협을 통한 공존 추구",
+      "외척 세력과 연합하여 정국 주도"
+    ],
+    ans: 1,
+    exp: "남인은 <strong>왕실 예제의 특수성</strong>을 인정해야 한다고 주장하였습니다. 왕위를 계승한 군주는 장자와 같으므로 사족의 종법과는 다른 기준이 적용되어야 한다는 입장으로, <strong>왕권의 독자성</strong>을 옹호하였습니다."
+  },
+  {
+    cat: "환국정치",
+    q: "경신환국(1680)의 직접적인 계기는 무엇인가?",
+    opts: ["희빈 장씨 아들의 세자 책봉 문제", "인현왕후 복위 문제", "허견의 역모 고변 사건", "자의대비 상복 재논쟁"],
+    ans: 2,
+    exp: "경신환국(1680)은 <strong>허견(남인 허적의 서자)의 역모 고변 사건</strong>을 계기로 남인이 대거 축출되고 서인이 집권하게 된 사건입니다."
+  },
+  {
+    cat: "환국정치",
+    q: "기사환국(1689)의 계기와 결과로 옳은 것은?",
+    opts: [
+      "인현왕후 복위 문제 → 남인 축출, 서인 집권",
+      "희빈 장씨 아들 세자 책봉 문제 → 서인 몰락, 남인 재집권",
+      "허견 역모 사건 → 남인 집권",
+      "갑술 역변 → 서인 분열"
+    ],
+    ans: 1,
+    exp: "기사환국(1689)은 <strong>희빈 장씨의 아들을 세자로 책봉하는 문제</strong>에서 서인이 반대하다 숙종의 뜻에 거슬리면서 <strong>서인이 몰락하고 남인이 재집권</strong>하게 된 사건입니다."
+  },
+  {
+    cat: "환국정치",
+    q: "갑술환국(1694)의 계기는?",
+    opts: ["세자 책봉 문제", "허견의 역모", "인현왕후 복위 문제", "예송 재발발"],
+    ans: 2,
+    exp: "갑술환국(1694)은 <strong>폐위되었던 인현왕후의 복위 문제</strong>를 계기로 남인이 다시 축출되고 서인이 재집권한 사건입니다. 희빈 장씨는 이후 사사(賜死)되었습니다."
+  },
+  {
+    cat: "환국정치",
+    q: "숙종 대 환국정치의 특성으로 가장 적절한 것은?",
+    opts: [
+      "붕당 간 자발적 합의로 정권이 교체된 점",
+      "숙종이 환국을 의도적으로 활용하여 왕권을 강화한 점",
+      "외세의 개입으로 정국이 뒤바뀐 점",
+      "공론에 의한 민주적 절차로 집권 세력이 교체된 점"
+    ],
+    ans: 1,
+    exp: "<strong>숙종은 환국을 의도적으로 활용</strong>하여 왕권을 강화하였습니다. 특정 붕당에 권력이 집중되면 이를 역모 등의 빌미로 교체함으로써 신하들이 왕에게 절대적으로 의존하게 만드는 방식이었습니다."
+  },
+  {
+    cat: "붕당정치 변질",
+    q: "환국정치가 본래 붕당정치와 다른 점으로 가장 적절한 것은?",
+    opts: [
+      "여러 붕당이 공존하며 공론에 의해 정책을 결정하는 방식",
+      "상대 붕당을 사사·유배로 제거하는 일당 독재적 방식",
+      "왕과 신하가 대등한 관계에서 정치를 운영하는 방식",
+      "성리학적 원칙에 따라 예법 논쟁으로 정책을 결정하는 방식"
+    ],
+    ans: 1,
+    exp: "본래 붕당정치가 <strong>복수 붕당의 공존·견제와 공론 정치</strong>를 이상으로 삼았다면, 환국정치는 <strong>상대 붕당을 사사·유배로 물리적으로 제거</strong>하는 방식으로 변질된 것이 핵심 차이입니다."
+  },
+  {
+    cat: "탕평책",
+    q: "환국정치의 폐단을 수습하기 위해 영조와 정조가 추진한 정책은?",
+    opts: ["서원 철폐", "탕평책", "호포법 시행", "균역법 실시"],
+    ans: 1,
+    exp: "영조와 정조는 <strong>탕평책(蕩平策)</strong>을 통해 붕당의 해체와 왕권 중심의 국정 운영을 추진하였습니다. 붕당을 초월하여 인재를 등용함으로써 사림정치 문화의 훼손을 수습하려 하였습니다."
+  },
+  {
+    cat: "종합",
+    q: "예송논쟁 → 환국정치 → 탕평책으로 이어지는 역사적 흐름에 대한 설명으로 옳지 않은 것은?",
+    opts: [
+      "예송논쟁은 단순한 예법 논쟁이 아니라 왕권·신권 이념 투쟁이었다.",
+      "환국정치는 붕당 간 보복과 옥사를 심화시켜 사림정치 문화를 훼손하였다.",
+      "탕평책은 붕당정치의 이상인 공론 정치를 강화하기 위해 추진되었다.",
+      "숙종은 환국을 의도적으로 활용하여 왕권을 강화하였다."
+    ],
+    ans: 2,
+    exp: "탕평책은 <strong>붕당 정치를 강화하기 위한 것이 아니라 붕당을 해체</strong>하고 왕권 중심의 국정 운영을 도모하기 위한 정책이었습니다. 붕당의 극단적 대립과 환국의 폐단을 수습하기 위해 추진된 것입니다."
+  }
+];
+
+let questions = [];
+let current = 0;
+let score = { correct: 0, wrong: 0 };
+let wrongIndexes = [];
+let answered = false;
+let isRetryMode = false;
+
+function init(qs) {
+  questions = qs;
+  current = 0;
+  score = { correct: 0, wrong: 0 };
+  wrongIndexes = [];
+  answered = false;
+  updateScoreStrip();
+  showQuestion();
+}
+
+function updateProgress() {
+  const total = questions.length;
+  const done = current;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('prog-label').textContent = `${done} / ${total}`;
+  document.getElementById('prog-pct').textContent = pct + '%';
+}
+
+function updateScoreStrip() {
+  document.getElementById('sc-correct').textContent = score.correct;
+  document.getElementById('sc-wrong').textContent = score.wrong;
+  document.getElementById('sc-remain').textContent = questions.length - current;
+}
+
+function showQuestion() {
+  if (current >= questions.length) { showResult(); return; }
+  answered = false;
+  updateProgress();
+  const q = questions[current];
+  const letters = ['①', '②', '③', '④'];
+  const area = document.getElementById('quiz-area');
+  area.innerHTML = `
+    <div class="q-card" id="q-card">
+      <div class="q-header">
+        <span class="q-num">Q${isRetryMode ? '' : current + 1}. ${isRetryMode ? '오답 재도전' : `문제 ${current + 1} / ${questions.length}`}</span>
+        <span class="q-category">${q.cat}</span>
+      </div>
+      <div class="q-body">
+        <div class="q-text">${q.q}</div>
+        <div class="options" id="opts">
+          ${q.opts.map((o, i) => `
+            <button class="opt-btn" onclick="select(${i})" id="opt-${i}">
+              <span class="opt-label">${letters[i]}</span>
+              <span>${o}</span>
+              <span class="opt-icon" id="icon-${i}"></span>
+            </button>
+          `).join('')}
+        </div>
+      </div>
+      <div id="exp-slot"></div>
+      <div class="next-wrap" id="next-wrap" style="display:none">
+        <button class="next-btn" onclick="nextQ()">${current + 1 >= questions.length ? '결과 보기' : '다음 문제'}</button>
+      </div>
+    </div>
+  `;
+}
+
+function select(chosen) {
+  if (answered) return;
+  answered = true;
+  const q = questions[current];
+  const correct = q.ans;
+  const isCorrect = chosen === correct;
+
+  if (isCorrect) {
+    score.correct++;
+  } else {
+    score.wrong++;
+    if (!isRetryMode) wrongIndexes.push(current);
+  }
+
+  // Style options
+  for (let i = 0; i < q.opts.length; i++) {
+    const btn = document.getElementById('opt-' + i);
+    const icon = document.getElementById('icon-' + i);
+    btn.disabled = true;
+    if (i === correct) {
+      btn.classList.add('correct-ans');
+      icon.textContent = '✓';
+    } else if (i === chosen && !isCorrect) {
+      btn.classList.add('wrong-ans');
+      icon.textContent = '✗';
+    }
+  }
+
+  // Show explanation
+  const expSlot = document.getElementById('exp-slot');
+  expSlot.innerHTML = `
+    <div class="explanation ${isCorrect ? 'correct' : 'wrong'}" style="margin-top:14px">
+      <div class="exp-header">${isCorrect ? '✓ 정답입니다!' : '✗ 오답입니다'}</div>
+      <div class="exp-body">${q.exp}</div>
+    </div>
+  `;
+
+  updateScoreStrip();
+  document.getElementById('next-wrap').style.display = 'block';
+}
+
+function nextQ() {
+  current++;
+  updateScoreStrip();
+  showQuestion();
+}
+
+function showResult() {
+  document.getElementById('quiz-area').style.display = 'none';
+  const rp = document.getElementById('result-page');
+  rp.style.display = 'block';
+  updateProgress();
+
+  const total = questions.length;
+  const pct = Math.round((score.correct / total) * 100);
+  let grade, msg;
+  if (pct >= 95)      { grade = 'S'; msg = '🏆 완벽한 이해! 역사 시험 준비 완료입니다.'; }
+  else if (pct >= 85) { grade = 'A'; msg = '👏 우수한 실력입니다. 오답 부분만 점검하세요.'; }
+  else if (pct >= 70) { grade = 'B'; msg = '📚 양호합니다. 오답 문제를 다시 풀어보세요.'; }
+  else if (pct >= 50) { grade = 'C'; msg = '🔄 기본기를 다시 정리하고 재도전하세요.'; }
+  else                { grade = 'D'; msg = '💪 답안 가이드부터 다시 검토해 보세요.'; }
+
+  document.getElementById('res-grade').textContent = grade;
+  document.getElementById('res-score-text').textContent = `${score.correct} / ${total} 정답  (${pct}%)`;
+  document.getElementById('res-msg').textContent = msg;
+  document.getElementById('res-correct').textContent = score.correct;
+  document.getElementById('res-wrong').textContent = score.wrong;
+
+  // Wrong list
+  const wrongWrap = document.getElementById('wrong-list-wrap');
+  const wrongBody = document.getElementById('wrong-list-body');
+  if (wrongIndexes.length > 0) {
+    wrongWrap.style.display = 'block';
+    document.getElementById('btn-retry').style.display = 'block';
+    wrongBody.innerHTML = wrongIndexes.map(idx => {
+      const q = ALL_QUESTIONS[idx];
+      return `<div class="wrong-item"><strong>Q${idx + 1}. ${q.q}</strong>정답: ${['①','②','③','④'][q.ans]} ${q.opts[q.ans]}</div>`;
+    }).join('');
+  }
+}
+
+function retryWrong() {
+  isRetryMode = true;
+  const retryQs = wrongIndexes.map(i => ALL_QUESTIONS[i]);
+  score = { correct: 0, wrong: 0 };
+  wrongIndexes = [];
+  document.getElementById('quiz-area').style.display = 'block';
+  document.getElementById('result-page').style.display = 'none';
+  current = 0;
+  questions = retryQs;
+  updateScoreStrip();
+  document.getElementById('sc-remain').textContent = questions.length;
+  showQuestion();
+}
+
+function restartAll() {
+  isRetryMode = false;
+  document.getElementById('quiz-area').style.display = 'block';
+  document.getElementById('result-page').style.display = 'none';
+  init([...ALL_QUESTIONS]);
+}
+
+// Start
+init([...ALL_QUESTIONS]);
+</script>
+</body>
+</html>
