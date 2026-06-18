@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>고려 정치제도 4지선다 퀴즈</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; background: #f5f4f0; color: #1a1a18; min-height: 100vh; padding: 2rem 1rem; }
+  .container { max-width: 720px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 2rem; }
+  header h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.4rem; }
+  header p { font-size: 0.875rem; color: #5f5e5a; }
+  .progress-bar-wrap { background: #d3d1c7; border-radius: 99px; height: 6px; margin-bottom: 0.5rem; }
+  .progress-bar { height: 6px; border-radius: 99px; background: #1D9E75; transition: width 0.4s; }
+  .progress-label { font-size: 0.8rem; color: #5f5e5a; text-align: right; margin-bottom: 1.5rem; }
+  .quiz-card { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 14px; padding: 1.75rem; margin-bottom: 1.25rem; }
+  .q-num { font-size: 0.75rem; font-weight: 600; color: #0F6E56; background: #E1F5EE; padding: 3px 10px; border-radius: 99px; display: inline-block; margin-bottom: 0.75rem; }
+  .q-text { font-size: 1rem; line-height: 1.7; font-weight: 500; margin-bottom: 1.25rem; }
+  .options { display: flex; flex-direction: column; gap: 0.6rem; }
+  .opt-btn { background: #fff; border: 0.5px solid #b4b2a9; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.9rem; line-height: 1.5; text-align: left; cursor: pointer; transition: all 0.15s; color: #1a1a18; }
+  .opt-btn:hover:not(:disabled) { background: #f1efe8; border-color: #888780; }
+  .opt-btn.correct { background: #E1F5EE; border-color: #1D9E75; color: #085041; }
+  .opt-btn.wrong { background: #FAECE7; border-color: #993C1D; color: #4A1B0C; }
+  .opt-btn.reveal { background: #E1F5EE; border-color: #1D9E75; color: #085041; }
+  .opt-btn:disabled { cursor: default; }
+  .explanation { margin-top: 1rem; padding: 0.875rem 1rem; background: #f1efe8; border-radius: 10px; font-size: 0.875rem; line-height: 1.7; color: #2c2c2a; display: none; }
+  .explanation.show { display: block; }
+  .explanation strong { color: #0F6E56; }
+  .result-panel { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 14px; padding: 2rem; text-align: center; display: none; }
+  .result-panel.show { display: block; }
+  .score-circle { width: 100px; height: 100px; border-radius: 50%; background: #E1F5EE; border: 3px solid #1D9E75; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+  .score-circle .num { font-size: 2rem; font-weight: 700; color: #0F6E56; line-height: 1; }
+  .score-circle .denom { font-size: 0.8rem; color: #1D9E75; }
+  .result-panel h2 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+  .result-panel p { font-size: 0.9rem; color: #5f5e5a; margin-bottom: 1.5rem; }
+  .btn-row { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 0.6rem 1.4rem; border-radius: 8px; font-size: 0.875rem; cursor: pointer; border: 0.5px solid #b4b2a9; background: #fff; color: #1a1a18; transition: background 0.15s; }
+  .btn:hover { background: #f1efe8; }
+  .btn.primary { background: #0F6E56; color: #fff; border-color: #0F6E56; }
+  .btn.primary:hover { background: #085041; }
+  .wrong-only-banner { background: #FAECE7; border: 0.5px solid #F0997B; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.875rem; color: #4A1B0C; margin-bottom: 1.25rem; display: none; }
+  .wrong-only-banner.show { display: block; }
+  .keyword-chip { display: inline-block; background: #E6F1FB; color: #0C447C; font-size: 0.75rem; padding: 2px 8px; border-radius: 99px; margin: 2px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>고려 정치제도 핵심 퀴즈</h1>
+    <p>중서문하성 · 중추원 · 도병마사 — 4지선다 12문항</p>
+  </header>
+
+  <div class="progress-bar-wrap"><div class="progress-bar" id="pbar" style="width:0%"></div></div>
+  <div class="progress-label" id="plabel">0 / 12 완료</div>
+
+  <div class="wrong-only-banner" id="wrongBanner">오답 재도전 모드 — 틀린 문제만 표시됩니다.</div>
+
+  <div id="quizArea"></div>
+  <div class="result-panel" id="resultPanel">
+    <div class="score-circle"><span class="num" id="scoreNum">0</span><span class="denom" id="scoreDenom">/ 12</span></div>
+    <h2 id="resultTitle"></h2>
+    <p id="resultMsg"></p>
+    <div class="btn-row">
+      <button class="btn primary" onclick="retryWrong()">오답만 다시 풀기</button>
+      <button class="btn" onclick="restartAll()">전체 다시 풀기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ALL_QUESTIONS = [
+  {
+    q: "고려가 당의 3성 6부제를 수용하면서 독자적으로 변용한 방식으로 옳은 것은?",
+    opts: [
+      "중서성·상서성·문하성을 그대로 3성으로 유지하였다",
+      "중서성과 문하성을 통합하여 중서문하성으로 운영하는 2성 6부제를 채택하였다",
+      "문하성을 폐지하고 중서성과 상서성만 운영하였다",
+      "당의 3성 6부제를 그대로 수용하여 변용 없이 시행하였다"
+    ],
+    ans: 1,
+    exp: "고려는 당의 3성(중서성·문하성·상서성) 6부제를 수용하되, <strong>중서성과 문하성을 통합하여 중서문하성</strong>으로 만들고 상서성과 함께 2성 6부제를 운영하였습니다. 이는 귀족 중심 합의 정치에 맞게 변용한 것입니다.",
+    keywords: ["2성6부제","중서문하성","상서성","당제변용"]
+  },
+  {
+    q: "고려 중서문하성의 재신에 대한 설명으로 옳은 것은?",
+    opts: [
+      "3품 이하 관리로 간쟁·봉박·서경을 담당하였다",
+      "왕명 출납을 전담하는 왕의 실무 보좌 역할을 하였다",
+      "2품 이상 고위 관리로 국정을 심의하고 결정하는 기능을 담당하였다",
+      "군사 기밀을 관장하며 중추원 소속으로 활동하였다"
+    ],
+    ans: 2,
+    exp: "<strong>재신</strong>은 중서문하성의 2품 이상 고위 관리로, 국정을 심의하고 결정하는 핵심 역할을 담당하였습니다. 또한 상서성 산하 6부의 판사를 겸임함으로써 권력이 귀족 상층부에 집중되는 귀족 합의제의 실질적 주체였습니다.",
+    keywords: ["재신","2품이상","심의결정","귀족합의제"]
+  },
+  {
+    q: "고려 중서문하성의 낭사가 담당한 기능 3가지를 모두 바르게 나열한 것은?",
+    opts: [
+      "군사기밀·왕명출납·국방외교",
+      "간쟁·봉박·서경",
+      "법제제정·물가조절·조세징수",
+      "과거감독·외교문서·재정관리"
+    ],
+    ans: 1,
+    exp: "낭사는 중서문하성의 3품 이하 관리로 <strong>간쟁(왕에게 직언)·봉박(잘못된 왕명 반려)·서경(관리 임명과 법령에 동의 또는 거부)</strong>을 담당하였습니다. 이 세 기능이 왕권 견제의 핵심 제도적 장치였습니다.",
+    keywords: ["낭사","간쟁","봉박","서경"]
+  },
+  {
+    q: "고려의 서경권과 조선의 서경권을 비교한 설명으로 옳은 것은?",
+    opts: [
+      "고려와 조선 모두 5품 이하 관리에 한해서만 서경권을 행사하였다",
+      "고려는 모든 관리에 대해 서경권을 행사하였고, 조선은 5품 이하로 제한하였다",
+      "조선은 모든 관리에 대해 서경권을 행사하였고, 고려는 5품 이하로 제한하였다",
+      "고려와 조선 모두 서경권을 폐지하고 왕권을 강화하였다"
+    ],
+    ans: 1,
+    exp: "<strong>고려는 모든 관리</strong>에 대해 서경권을 행사하여 귀족권이 강세였으나, <strong>조선은 5품 이하 관리</strong>에 한정하여 서경권을 행사함으로써 왕권이 상대적으로 강화되었습니다. 이는 두 왕조의 권력 구조 차이를 잘 보여줍니다.",
+    keywords: ["서경권","고려전관리","조선5품이하","왕권강화"]
+  },
+  {
+    q: "고려 중추원의 구성에 대한 설명으로 옳은 것은?",
+    opts: [
+      "재신과 낭사로 구성되어 국정 심의를 담당하였다",
+      "추밀과 승선으로 구성되어 군사기밀 관장과 왕명출납을 담당하였다",
+      "재신과 추밀이 합좌하여 법제와 격식을 제정하는 기구였다",
+      "6부의 판사를 겸임하며 행정을 집행하는 실무 기관이었다"
+    ],
+    ans: 1,
+    exp: "고려 <strong>중추원</strong>은 <strong>추밀(군사 기밀 담당)</strong>과 <strong>승선(왕명 출납 담당)</strong>으로 구성된 왕의 실무 보좌 기관입니다. 중서문하성이 정책을 심의·결정하는 기관이라면, 중추원은 왕과 직접 소통하는 실무 채널이었습니다.",
+    keywords: ["중추원","추밀","승선","왕명출납","군사기밀"]
+  },
+  {
+    q: "고려 도병마사에 대한 설명으로 옳지 않은 것은?",
+    opts: [
+      "중서문하성의 재신과 중추원의 추밀이 합좌하는 기구였다",
+      "국방과 외교 문제를 심의하는 최고 회의체였다",
+      "고려 독자적인 합좌 기구로 당의 제도에는 없던 기관이었다",
+      "물가 조절과 재정 수입을 관장하는 경제 전담 기구였다"
+    ],
+    ans: 3,
+    exp: "<strong>도병마사</strong>는 물가 조절이나 재정과는 무관한 <strong>국방·외교 최고 회의체</strong>입니다. 재신과 추밀이 합좌하는 고려 독자적 기구로, 이와 유사하게 법제·격식을 담당한 식목도감과 쌍을 이루었습니다. 물가 조절은 상평창의 기능입니다.",
+    keywords: ["도병마사","재신추밀합좌","국방외교","고려독자기구"]
+  },
+  {
+    q: "도병마사와 식목도감의 기능 차이를 바르게 설명한 것은?",
+    opts: [
+      "도병마사는 법제·격식 제정, 식목도감은 국방·외교 담당",
+      "도병마사는 국방·외교, 식목도감은 법제·격식 담당",
+      "두 기관 모두 국방·외교를 분담하여 담당",
+      "두 기관 모두 법제·격식 제정을 분담하여 담당"
+    ],
+    ans: 1,
+    exp: "<strong>도병마사</strong>는 국방·외교 문제를 담당하는 최고 회의체이고, <strong>식목도감</strong>은 국내 법제·격식을 제정하는 기구입니다. 두 기관 모두 재신과 추밀의 합좌로 운영되는 고려 독자적 기구이지만 담당 기능이 명확히 구분됩니다.",
+    keywords: ["도병마사국방외교","식목도감법제격식","합좌기구구분"]
+  },
+  {
+    q: "원 간섭기에 도병마사가 도평의사사로 개편되면서 나타난 변화로 옳은 것은?",
+    opts: [
+      "구성원이 축소되고 기능이 국방·외교로 한정되었다",
+      "구성원이 확대되고 기능이 국방·외교에서 국정 전반으로 확장되었다",
+      "기능은 그대로이고 명칭만 도평의사사로 바뀌었다",
+      "중서문하성에 흡수 통합되어 독립 기구로서 역할을 상실하였다"
+    ],
+    ans: 1,
+    exp: "도병마사가 <strong>도평의사사(도당)</strong>로 개편되면서 단순한 명칭 변경이 아니라 <strong>구성원이 확대</strong>되고 기능이 국방·외교에서 <strong>국정 전반으로 확장</strong>되는 질적 변화가 이루어졌습니다. 이를 통해 권문세족이 도당을 장악하여 국정을 독점하게 되었습니다.",
+    keywords: ["도평의사사","구성원확대","국정전반","질적변화"]
+  },
+  {
+    q: "고려 말 도평의사사(도당)에 대한 설명으로 옳은 것은?",
+    opts: [
+      "신진사대부가 장악하여 성리학 이념에 따른 개혁을 주도하였다",
+      "권문세족이 장악하여 음서로 관직을 세습하고 국정을 독점하였다",
+      "왕권이 강화되어 왕이 직접 도평의사사를 주관하였다",
+      "무신들이 장악하여 교정도감과 함께 군사 정치를 펼쳤다"
+    ],
+    ans: 1,
+    exp: "고려 말 <strong>도평의사사</strong>는 기존 문벌귀족·무신정권 부상 세력·친원파 등이 결합한 <strong>권문세족</strong>이 장악하여 국정을 독점하였습니다. 음서를 통해 관직을 세습하고 대농장을 경영하면서 국가 재정을 파탄에 이르게 하였으며, 이는 신진사대부의 개혁 비판 대상이 되었습니다.",
+    keywords: ["도평의사사","권문세족","국정독점","음서","도당정치"]
+  },
+  {
+    q: "고려의 합좌 기구와 조선의 관련 기구를 비교한 설명으로 옳은 것은?",
+    opts: [
+      "도평의사사는 조선의 비변사로 계승되어 군사 문제를 전담하였다",
+      "도평의사사는 조선 건국 후 혁파되고 의정부가 설치되어 재상 합의제로 이어졌다",
+      "고려 도병마사는 조선의 도평의사사로 명칭만 바뀌어 그대로 유지되었다",
+      "고려 삼사는 조선의 사헌부·사간원·홍문관과 동일한 언론 기능을 담당하였다"
+    ],
+    ans: 1,
+    exp: "원 간섭기 국정을 독점하던 <strong>도평의사사</strong>는 조선 건국 후 혁파되고 <strong>의정부</strong>가 설치되어 재상 합의제 전통이 계승되었습니다. 또한 고려 삼사(三司)는 단순 재정·회계 기관으로 조선의 삼사(사헌부·사간원·홍문관, 언론·감찰 기능)와는 전혀 다릅니다.",
+    keywords: ["도평의사사혁파","의정부설치","고려삼사재정","조선삼사언론"]
+  },
+  {
+    q: "다음 중 고려 정치제도에 대한 설명으로 옳지 않은 것은?",
+    opts: [
+      "중서문하성의 재신이 상서성 6부의 판사를 겸임하여 권력이 귀족에게 집중되었다",
+      "중추원의 승선은 왕명 출납을 담당하였다",
+      "도병마사와 식목도감은 모두 재신과 추밀의 합좌로 운영되었다",
+      "고려 삼사(三司)는 사헌부·사간원·홍문관으로 구성된 언론 기관이었다"
+    ],
+    ans: 3,
+    exp: "<strong>고려 삼사(三司)</strong>는 사헌부·사간원·홍문관이 아니라 <strong>단순한 재정·회계 실무 기관</strong>입니다. 사헌부·사간원·홍문관으로 구성된 언론·감찰 삼사는 <strong>조선</strong>의 제도입니다. 이 혼동은 시험에서 자주 출제되는 함정입니다.",
+    keywords: ["고려삼사재정","조선삼사언론","혼동주의","사헌부사간원홍문관"]
+  },
+  {
+    q: "고려 정치제도의 전반적인 성격을 가장 잘 설명한 것은?",
+    opts: [
+      "왕권이 절대적으로 강화된 중앙집권적 전제 왕정 체제였다",
+      "당의 3성 6부제를 변용하고 독자적 합좌 기구를 두어 귀족 중심 합의 정치의 자율성을 제도화하였다",
+      "무신들이 중심이 된 군사 독재 체제로 문신은 완전히 배제되었다",
+      "지방 호족이 독자적 권력을 유지하며 중앙 정부와 대등한 관계를 형성하였다"
+    ],
+    ans: 1,
+    exp: "고려 정치제도의 핵심은 당제를 수용하면서도 <strong>중서문하성(정책 심의·결정)과 상서성(집행)의 2성 6부제</strong>로 변용하고, 재신·추밀이 합좌하는 <strong>도병마사·식목도감</strong>을 두어 <strong>귀족 중심 합의 정치</strong>를 제도화한 것입니다. 낭사의 서경권도 이 귀족 합의제의 제도적 장치였습니다.",
+    keywords: ["귀족합의제","합좌기구","2성6부변용","서경권"]
+  }
+];
+
+let currentQuestions = [];
+let wrongIds = [];
+let answered = [];
+let score = 0;
+let isWrongOnlyMode = false;
+
+function init(questions, wrongOnly = false) {
+  currentQuestions = questions;
+  wrongIds = [];
+  answered = new Array(questions.length).fill(false);
+  score = 0;
+  isWrongOnlyMode = wrongOnly;
+  document.getElementById('wrongBanner').className = wrongOnly ? 'wrong-only-banner show' : 'wrong-only-banner';
+  document.getElementById('resultPanel').className = 'result-panel';
+  renderAll();
+  updateProgress();
+}
+
+function renderAll() {
+  const area = document.getElementById('quizArea');
+  area.innerHTML = currentQuestions.map((q, i) => renderCard(q, i)).join('');
+}
+
+function renderCard(q, i) {
+  const optsHtml = q.opts.map((o, oi) =>
+    `<button class="opt-btn" id="opt_${i}_${oi}" onclick="choose(${i},${oi})">${String.fromCharCode(9312+oi)} ${o}</button>`
+  ).join('');
+  const kwHtml = q.keywords.map(k => `<span class="keyword-chip">${k}</span>`).join('');
+  return `
+  <div class="quiz-card" id="card_${i}">
+    <span class="q-num">Q${i+1}</span>
+    <p class="q-text">${q.q}</p>
+    <div class="options">${optsHtml}</div>
+    <div class="explanation" id="exp_${i}">
+      <p>${q.exp}</p>
+      <div style="margin-top:0.5rem;">${kwHtml}</div>
+    </div>
+  </div>`;
+}
+
+function choose(qIdx, optIdx) {
+  if (answered[qIdx]) return;
+  answered[qIdx] = true;
+  const q = currentQuestions[qIdx];
+  const isCorrect = optIdx === q.ans;
+  if (isCorrect) { score++; }
+  else { wrongIds.push(qIdx); }
+
+  for (let i = 0; i < q.opts.length; i++) {
+    const btn = document.getElementById(`opt_${qIdx}_${i}`);
+    btn.disabled = true;
+    if (i === q.ans) btn.classList.add(isCorrect && i === optIdx ? 'correct' : 'reveal');
+    if (!isCorrect && i === optIdx) btn.classList.add('wrong');
+  }
+  document.getElementById(`exp_${qIdx}`).classList.add('show');
+  updateProgress();
+
+  if (answered.every(Boolean)) {
+    setTimeout(showResult, 600);
+  }
+}
+
+function updateProgress() {
+  const done = answered.filter(Boolean).length;
+  const total = currentQuestions.length;
+  document.getElementById('pbar').style.width = (done/total*100)+'%';
+  document.getElementById('plabel').textContent = `${done} / ${total} 완료`;
+}
+
+function showResult() {
+  const total = currentQuestions.length;
+  const pct = Math.round(score/total*100);
+  document.getElementById('scoreNum').textContent = score;
+  document.getElementById('scoreDenom').textContent = `/ ${total}`;
+  const titles = ['다시 도전해 보세요', '기초를 다져봅시다', '조금 더 공부가 필요해요', '잘 이해하고 있어요', '거의 완벽해요', '만점! 완벽합니다'];
+  const msgs = [
+    '모범답안의 키워드를 다시 정리해 보세요.',
+    '필수 키워드 표를 먼저 암기해 보세요.',
+    '틀린 문제의 해설을 꼼꼼히 읽어보세요.',
+    '오답 문제를 한 번 더 풀어보면 완성됩니다.',
+    '핵심 키워드를 시험장에서도 떠올릴 수 있을 거예요.',
+    '이 주제는 완벽하게 정복했습니다!'
+  ];
+  const idx = Math.min(Math.floor(pct/20), 5);
+  document.getElementById('resultTitle').textContent = titles[idx];
+  document.getElementById('resultMsg').textContent = msgs[idx];
+  document.getElementById('resultPanel').className = 'result-panel show';
+  document.getElementById('resultPanel').scrollIntoView({behavior:'smooth'});
+}
+
+function retryWrong() {
+  if (wrongIds.length === 0) { alert('모든 문제를 맞혔습니다!'); return; }
+  const wrongQs = wrongIds.map(i => currentQuestions[i]);
+  init(wrongQs, true);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function restartAll() {
+  init(ALL_QUESTIONS, false);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+init(ALL_QUESTIONS);
+</script>
+</body>
+</html>
